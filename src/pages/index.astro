@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import FeaturedTools from '../components/FeaturedTools.astro';
+import Benefits from '../components/Benefits.astro';
+import MoreTools from '../components/MoreTools.astro';
+import About from '../components/About.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../config/site.js';
+---
+
+<Layout>
+  <Header />
+  <main id="main">
+    <Hero />
+    <FeaturedTools />
+    <Benefits brand={site.name} />
+    <MoreTools />
+    <About />
+  </main>
+  <Footer />
+</Layout>

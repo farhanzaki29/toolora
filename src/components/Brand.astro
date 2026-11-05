@@ -1,0 +1,33 @@
+---
+import { site } from '../config/site.js';
+---
+
+<a class="brand" href="/" aria-label={`${site.name} home`}>
+  <span class="mark" aria-hidden="true">{site.name.charAt(0)}</span>
+  <span class="name">{site.name}</span>
+</a>
+
+<style>
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    letter-spacing: -0.02em;
+  }
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: var(--btn-bg);
+    color: var(--btn-ink);
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: background var(--fast) var(--ease);
+  }
+  .brand:hover .mark { background: var(--accent); color: var(--accent-ink); }
+</style>

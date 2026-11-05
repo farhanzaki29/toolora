@@ -1,0 +1,44 @@
+---
+import '../styles/global.css';
+import { site } from '../config/site.js';
+
+const { title, description = site.description } = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — ${site.tagline}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#fafaf7" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Runs before first paint: applies saved theme, else the OS preference, so there is no flash. -->
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        root.classList.add('js');
+        var theme;
+        try { theme = localStorage.getItem('theme'); } catch (e) {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        root.dataset.theme = theme;
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#111316' : '#fafaf7');
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <slot />
+    <script>
+      import '../scripts/reveal.js';
+    </script>
+  </body>
+</html>

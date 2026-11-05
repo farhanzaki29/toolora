@@ -1,0 +1,49 @@
+---
+/**
+ * Lightweight inline SVG icons (24x24, 1.75 stroke, Lucide-style geometry drawn for this project).
+ * No icon library dependency. Add a new icon by adding a key to `paths`.
+ */
+const { name, size = 24, class: className = '' } = Astro.props;
+
+const paths = {
+  compress: '<path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m3 21 7-7"/>',
+  resize: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 21v-6a2 2 0 0 1 2-2h4"/><path d="m15 9-3 3"/><path d="M3 9h6"/>',
+  text: '<path d="M4 7V5h16v2"/><path d="M12 5v14"/><path d="M9 19h6"/>',
+  braces: '<path d="M8 3H7a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1 2 2v4a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-1"/>',
+  wifi: '<path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M2 9a14.5 14.5 0 0 1 20 0"/><circle cx="12" cy="19.5" r="0.6" fill="currentColor"/>',
+  code: '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
+  palette: '<circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="7.5" r="1" fill="currentColor"/><circle cx="15.5" cy="10" r="1" fill="currentColor"/><path d="M12 21c-1.5 0-2-1.5-1-2.7.8-1 .3-2.3-1-2.3H8"/>',
+  file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+  case: '<path d="m3 17 4-10 4 10"/><path d="M4.5 13h5"/><path d="M14 17v-5a2.5 2.5 0 0 1 5 0v5"/><path d="M14 14.5h5"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  arrow: '<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  close: '<path d="M6 6l12 12M18 6 6 18"/>',
+  gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="m3 3 18 18" />',
+  zap: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  shield: '<path d="M12 3 4 6v6c0 4.5 3.2 8 8 9 4.8-1 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+  check: '<path d="m5 12 5 5 9-10"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+};
+
+const body = paths[name] ?? '';
+---
+
+<svg
+  class={className}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.75"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  set:html={body}
+/>

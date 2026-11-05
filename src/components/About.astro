@@ -1,0 +1,30 @@
+---
+import { site } from '../config/site.js';
+---
+
+<section class="section about" id="about" aria-labelledby="about-title">
+  <div class="container wrap">
+    <div data-reveal>
+      <p class="eyebrow">About</p>
+      <h2 id="about-title">A small set of tools, done properly</h2>
+    </div>
+    <div class="body" data-reveal style="--reveal-delay:80ms">
+      <p>
+        {site.name} is a growing collection of simple online utilities for the jobs that come up every day. Each tool does one thing, loads quickly and stays out of the way.
+      </p>
+      <p>
+        We’re starting with five tools and building a foundation that makes it easy to add more over time.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about { border-top: 1px solid var(--line); }
+  .wrap { display: grid; gap: 1.75rem; }
+  h2 { margin-top: 0.75rem; font-size: clamp(1.5rem, 3vw, 2rem); max-width: 18ch; }
+  .body { display: grid; gap: 1rem; color: var(--ink-2); font-size: 1.0625rem; max-width: 36rem; }
+  @media (min-width: 900px) {
+    .wrap { grid-template-columns: 1fr 1.1fr; gap: 4rem; align-items: start; }
+  }
+</style>

@@ -1,0 +1,85 @@
+---
+import Brand from './Brand.astro';
+import { site } from '../config/site.js';
+import { liveTools, toolHref } from '../data/tools.js';
+
+const year = new Date().getFullYear();
+const company = [
+  { label: 'About', href: site.links.about },
+  { label: 'Contact', href: site.links.contact },
+  { label: 'Privacy Policy', href: site.links.privacy },
+  { label: 'Terms of Use', href: site.links.terms },
+];
+---
+
+<footer class="footer">
+  <div class="container top">
+    <div class="about">
+      <Brand />
+      <p>{site.description}</p>
+    </div>
+
+    <nav aria-label="Tools">
+      <h2>Tools</h2>
+      <ul>
+        {liveTools.map((t) => <li><a href={toolHref(t)}>{t.name}</a></li>)}
+      </ul>
+    </nav>
+
+    <nav aria-label="Company and legal">
+      <h2>Company</h2>
+      <ul>
+        {company.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </nav>
+  </div>
+
+  <div class="container bottom">
+    <p>© {year} {site.name}. All rights reserved.</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding-top: clamp(3rem, 6vw, 4.5rem);
+  }
+  .top {
+    display: grid;
+    gap: 2.5rem;
+    grid-template-columns: 1fr 1fr;
+    padding-bottom: 3rem;
+  }
+  .about { grid-column: 1 / -1; max-width: 22rem; }
+  .about p { margin-top: 1rem; color: var(--muted); font-size: 0.9375rem; }
+
+  h2 {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  ul { display: grid; gap: 0.6rem; }
+  li a {
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+    transition: color var(--fast) var(--ease);
+  }
+  li a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+  .bottom {
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  @media (min-width: 800px) {
+    .top { grid-template-columns: 1.6fr 1fr 1fr; }
+    .about { grid-column: auto; }
+  }
+</style>

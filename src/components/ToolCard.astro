@@ -1,0 +1,98 @@
+---
+import Icon from './Icon.astro';
+import { toolHref } from '../data/tools.js';
+
+const { tool, index = 0 } = Astro.props;
+const searchText = `${tool.name} ${tool.description} ${tool.category} ${tool.keywords}`.toLowerCase();
+---
+
+<li class="item" data-tool-item data-search={searchText} data-reveal style={`--reveal-delay:${index * 60}ms`}>
+  <a class="card" href={toolHref(tool)}>
+    <div class="top">
+      <span class="icon"><Icon name={tool.icon} size={22} /></span>
+      <span class="badge">Free</span>
+    </div>
+    <h3>{tool.name}</h3>
+    <p>{tool.description}</p>
+    <span class="open">
+      Open tool <Icon name="arrow" size={16} class="arrow" />
+    </span>
+  </a>
+</li>
+
+<style>
+  .item[hidden] { display: none; }
+
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    transition: transform var(--med) var(--ease), border-color var(--med) var(--ease),
+      box-shadow var(--med) var(--ease);
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-md);
+  }
+  .card:focus-visible { outline-offset: 2px; border-radius: var(--radius-lg); }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+  }
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    background: var(--surface-sunken);
+    color: var(--ink);
+    transition: background var(--med) var(--ease), color var(--med) var(--ease);
+  }
+  .card:hover .icon { background: var(--accent); color: var(--accent-ink); }
+
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--success);
+    background: var(--success-tint);
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+  }
+
+  h3 { font-size: 1.1875rem; letter-spacing: -0.015em; }
+  p {
+    margin-top: 0.5rem;
+    color: var(--muted);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .open {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    font-weight: 550;
+    color: var(--ink);
+  }
+  .open :global(.arrow) {
+    transition: transform var(--med) var(--ease);
+  }
+  .card:hover .open { color: var(--accent); }
+  .card:hover .open :global(.arrow) { transform: translateX(4px); }
+</style>

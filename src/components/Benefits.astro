@@ -1,0 +1,89 @@
+---
+import Icon from './Icon.astro';
+
+// Wording is deliberately conservative: it describes the intent of the product
+// without promising guarantees the final tools may not be able to keep.
+const benefits = [
+  {
+    icon: 'gift',
+    title: 'Free to use',
+    text: 'Every tool is free. Open it, use it, and move on with your day.',
+  },
+  {
+    icon: 'user',
+    title: 'No unnecessary signups',
+    text: 'You shouldn’t need an account just to resize a picture or format some JSON.',
+  },
+  {
+    icon: 'zap',
+    title: 'Fast by design',
+    text: 'Lightweight pages and in-browser processing keep results quick, with no upload queues.',
+  },
+  {
+    icon: 'shield',
+    title: 'Browser-based processing',
+    text: 'Tools are built to do their work in your browser where possible, so your files don’t need to be sent to a server for processing.',
+  },
+];
+---
+
+<section class="section benefits" id="benefits" aria-labelledby="benefits-title">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <p class="eyebrow">Why {Astro.props.brand ?? 'us'}</p>
+      <h2 id="benefits-title">Useful, quick and out of your way</h2>
+      <p>The principles every tool on the platform is built around.</p>
+    </div>
+
+    <ul class="grid">
+      {benefits.map((b, i) => (
+        <li data-reveal style={`--reveal-delay:${i * 60}ms`}>
+          <span class="icon"><Icon name={b.icon} size={20} /></span>
+          <h3>{b.title}</h3>
+          <p>{b.text}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .benefits {
+    background: var(--surface);
+    border-block: 1px solid var(--line);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    border-top: 1px solid var(--line);
+  }
+  .grid li {
+    padding: 1.75rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .icon {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    background: var(--accent-tint);
+    margin-bottom: 1.1rem;
+  }
+  h3 { font-size: 1.0625rem; letter-spacing: -0.01em; }
+  p { margin-top: 0.5rem; color: var(--muted); font-size: 0.9375rem; line-height: 1.6; }
+
+  @media (min-width: 640px) {
+    .grid { grid-template-columns: repeat(2, 1fr); column-gap: 3rem; }
+  }
+  @media (min-width: 980px) {
+    .grid { grid-template-columns: repeat(4, 1fr); column-gap: 0; border-top: 0; }
+    .grid li {
+      padding: 0.25rem 1.75rem 0.25rem 1.75rem;
+      border-bottom: 0;
+      border-left: 1px solid var(--line);
+    }
+    .grid li:first-child { padding-left: 0; border-left: 0; }
+  }
+</style>

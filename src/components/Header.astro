@@ -1,0 +1,166 @@
+---
+import Brand from './Brand.astro';
+import Icon from './Icon.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import { site } from '../config/site.js';
+import { liveTools, toolHref } from '../data/tools.js';
+---
+
+<header class="header">
+  <div class="container bar">
+    <Brand />
+
+    <nav class="desktop" aria-label="Primary">
+      <ul>
+        {site.nav.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="actions">
+      <ThemeToggle />
+      <a class="btn btn-primary btn-sm cta" href="/#tools">Browse tools</a>
+      <button
+        class="toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Open menu"
+        data-nav-toggle
+      >
+        <span class="open"><Icon name="menu" size={22} /></span>
+        <span class="close"><Icon name="close" size={22} /></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile" id="mobile-menu" data-nav-panel hidden>
+    <nav class="container" aria-label="Mobile">
+      <ul>
+        {site.nav.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+      <p class="group-label">Tools</p>
+      <ul class="tool-list">
+        {liveTools.map((tool) => (
+          <li>
+            <a href={toolHref(tool)}>
+              <Icon name={tool.icon} size={18} />
+              {tool.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const panel = document.querySelector<HTMLElement>('[data-nav-panel]');
+
+  if (toggle && panel) {
+    const set = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      panel.hidden = !open;
+      document.body.classList.toggle('nav-open', open);
+    };
+    toggle.addEventListener('click', () => set(toggle.getAttribute('aria-expanded') !== 'true'));
+    panel.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) set(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) {
+        set(false);
+        toggle.focus();
+      }
+    });
+    window.matchMedia('(min-width: 800px)').addEventListener('change', (m) => m.matches && set(false));
+  }
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(12px);
+    -webkit-backdrop-filter: saturate(1.4) blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar {
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+  .desktop { display: none; margin-right: auto; margin-left: 1rem; }
+  .desktop ul { display: flex; gap: 0.25rem; }
+  .desktop a {
+    display: block;
+    padding: 0.45rem 0.8rem;
+    border-radius: var(--radius-sm);
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: color var(--fast) var(--ease), background var(--fast) var(--ease);
+  }
+  .desktop a:hover { color: var(--ink); background: var(--surface-sunken); }
+
+  .actions { display: flex; align-items: center; gap: 0.5rem; }
+  .cta { display: none; }
+
+  .toggle {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+  }
+  .toggle .close { display: none; }
+  .toggle[aria-expanded='true'] .open { display: none; }
+  .toggle[aria-expanded='true'] .close { display: block; }
+
+  .mobile {
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+    max-height: calc(100dvh - var(--header-h));
+    overflow-y: auto;
+    padding-block: 0.75rem 1.5rem;
+  }
+  .mobile[hidden] { display: none; }
+  .mobile a {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem 0;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .group-label {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .tool-list a { color: var(--ink-2); font-weight: 450; }
+  .tool-list :global(svg) { color: var(--accent); }
+
+  @media (min-width: 800px) {
+    .desktop { display: block; }
+    .cta { display: inline-flex; }
+    .toggle, .mobile { display: none !important; }
+  }
+</style>

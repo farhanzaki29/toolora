@@ -1,0 +1,94 @@
+---
+import Icon from './Icon.astro';
+import { plannedTools } from '../data/tools.js';
+---
+
+<section class="section more" id="more-tools" aria-labelledby="more-title">
+  <div class="container">
+    <div class="head" data-reveal>
+      <div class="section-head">
+        <p class="eyebrow">On the roadmap</p>
+        <h2 id="more-title">More tools are on the way</h2>
+        <p>The platform is built to grow. New tools drop into the same system, so adding one never means starting over.</p>
+      </div>
+    </div>
+
+    <ul class="grid">
+      {plannedTools.map((t, i) => (
+        <li class="slot" data-reveal style={`--reveal-delay:${i * 50}ms`}>
+          <span class="icon"><Icon name={t.icon} size={18} /></span>
+          <div>
+            <h3>{t.name}</h3>
+            <p>{t.category}</p>
+          </div>
+          <span class="soon">Soon</span>
+        </li>
+      ))}
+      <li class="slot suggest" data-reveal style={`--reveal-delay:${plannedTools.length * 50}ms`}>
+        <a href="/contact">
+          <span class="icon"><Icon name="plus" size={18} /></span>
+          <div>
+            <h3>Suggest a tool</h3>
+            <p>Tell us what’s missing</p>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  .head :global(.section-head) { margin-bottom: 2rem; }
+  .grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 980px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .slot {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.15rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    color: var(--muted);
+  }
+  .icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-sunken);
+    color: var(--muted);
+  }
+  h3 { font-size: 0.9375rem; font-weight: 600; color: var(--ink-2); letter-spacing: -0.005em; }
+  p { font-size: 0.8125rem; color: var(--muted); }
+  .soon {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .suggest { padding: 0; border-style: solid; background: var(--surface); }
+  .suggest a {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    width: 100%;
+    padding: 1rem 1.15rem;
+    border-radius: var(--radius);
+    transition: background var(--fast) var(--ease);
+  }
+  .suggest:hover { border-color: var(--accent); }
+  .suggest:hover .icon { background: var(--accent); color: var(--accent-ink); }
+  .suggest .icon { transition: background var(--fast) var(--ease), color var(--fast) var(--ease); }
+  .suggest h3 { color: var(--ink); }
+</style>

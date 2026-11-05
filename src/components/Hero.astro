@@ -1,0 +1,323 @@
+---
+import Icon from './Icon.astro';
+import { liveTools } from '../data/tools.js';
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container layout">
+    <div class="copy">
+      <p class="eyebrow" data-reveal>Free online tools</p>
+      <h1 id="hero-title" data-reveal style="--reveal-delay:60ms">
+        Everyday tools, <span class="soft">without the clutter.</span>
+      </h1>
+      <p class="lede" data-reveal style="--reveal-delay:120ms">
+        Compress images, count words, format JSON and more. Fast, focused tools that work right in your browser and don’t ask you to sign up.
+      </p>
+
+      <form class="search" role="search" data-tool-search-form data-reveal style="--reveal-delay:180ms">
+        <label for="tool-search" class="sr-only">Search tools</label>
+        <span class="search-icon"><Icon name="search" size={20} /></span>
+        <input
+          id="tool-search"
+          type="search"
+          name="q"
+          placeholder="Search tools, e.g. “resize image”"
+          autocomplete="off"
+          spellcheck="false"
+          aria-controls="tools"
+          data-tool-search
+        />
+        <kbd aria-hidden="true">/</kbd>
+        <button class="btn btn-primary" type="submit">
+          Find tool <Icon name="arrow" size={16} class="arrow" />
+        </button>
+      </form>
+
+      <p class="popular" data-reveal style="--reveal-delay:240ms">
+        <span>Popular:</span>
+        {liveTools.slice(0, 3).map((t) => (
+          <button type="button" class="chip" data-chip={t.name}>{t.name}</button>
+        ))}
+      </p>
+    </div>
+
+    <div class="visual" aria-hidden="true" data-reveal style="--reveal-delay:200ms">
+      <div class="panel">
+        <div class="panel-bar">
+          <span class="dots"><i></i><i></i><i></i></span>
+          <span class="panel-title">Tools</span>
+        </div>
+        <div class="panel-body">
+          <ul class="rail">
+            {liveTools.map((t, i) => (
+              <li class:list={[{ active: i === 3 }]}>
+                <Icon name={t.icon} size={16} />
+                <span>{t.name}</span>
+              </li>
+            ))}
+          </ul>
+          <div class="preview">
+            <div class="preview-head">
+              <span>JSON Formatter</span>
+              <span class="ok">Valid</span>
+            </div>
+<pre><code><span class="k">{`{`}</span>
+  <span class="s">"name"</span>: <span class="v">"Toolora"</span>,
+  <span class="s">"free"</span>: <span class="b">true</span>,
+  <span class="s">"tools"</span>: <span class="k">[</span><span class="v">"image"</span>, <span class="v">"text"</span>, <span class="v">"json"</span><span class="k">]</span>
+<span class="k">{`}`}</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-tool-search]');
+  const form = document.querySelector<HTMLFormElement>('[data-tool-search-form]');
+  const items = Array.from(document.querySelectorAll<HTMLElement>('[data-tool-item]'));
+  const empty = document.querySelector<HTMLElement>('[data-tool-empty]');
+
+  const filter = () => {
+    if (!input) return;
+    const terms = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let visible = 0;
+    for (const el of items) {
+      const hay = el.dataset.search ?? '';
+      const match = terms.every((t) => hay.includes(t));
+      el.hidden = !match;
+      if (match) {
+        visible++;
+        // Ensure revealed items aren't left invisible when they re-enter the grid.
+        el.classList.add('is-visible');
+      }
+    }
+    if (empty) empty.hidden = visible > 0;
+  };
+
+  input?.addEventListener('input', filter);
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    filter();
+    document.getElementById('tools')?.scrollIntoView({ behavior: 'smooth' });
+    // If exactly one tool matches, offer a fast path to it with Enter again.
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-chip]').forEach((chip) =>
+    chip.addEventListener('click', () => {
+      if (!input) return;
+      input.value = chip.dataset.chip ?? '';
+      filter();
+      document.getElementById('tools')?.scrollIntoView({ behavior: 'smooth' });
+    })
+  );
+
+  // Press "/" to focus search (unless already typing somewhere)
+  document.addEventListener('keydown', (e) => {
+    const t = e.target as HTMLElement;
+    const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+    if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault();
+      input?.focus();
+    }
+  });
+</script>
+
+<style>
+  .hero {
+    padding-block: clamp(3.5rem, 8vw, 6.5rem) clamp(3rem, 6vw, 5rem);
+    border-bottom: 1px solid var(--line);
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 56px,
+      var(--bg);
+    background-blend-mode: normal;
+    position: relative;
+  }
+  /* Fade the faint ruled lines out so they only whisper at the top */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 55%, transparent), var(--bg) 85%);
+    pointer-events: none;
+  }
+  .layout {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3.5rem;
+    align-items: center;
+  }
+  @media (min-width: 980px) {
+    .layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 4rem; }
+  }
+
+  h1 {
+    margin-top: 1rem;
+    font-size: clamp(2.5rem, 6.4vw, 4.25rem);
+    letter-spacing: -0.035em;
+    line-height: 1.04;
+    font-weight: 700;
+  }
+  .soft { color: var(--muted); font-weight: 600; }
+
+  .lede {
+    margin-top: 1.5rem;
+    max-width: 34rem;
+    font-size: clamp(1.0625rem, 1.6vw, 1.1875rem);
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+
+  /* Search */
+  .search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2.25rem;
+    max-width: 36rem;
+    padding: 6px 6px 6px 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+  }
+  .search:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-tint);
+  }
+  .search-icon { color: var(--muted); display: grid; }
+  .search input {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    border: 0;
+    background: transparent;
+    font-size: 1rem;
+  }
+  .search input:focus, .search input:focus-visible { outline: none; }
+  .search input::placeholder { color: var(--placeholder); }
+  .search input::-webkit-search-cancel-button { display: none; }
+  kbd {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    border: 1px solid var(--line-strong);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 0.1rem 0.45rem;
+    display: none;
+  }
+  @media (min-width: 640px) { kbd { display: inline-block; } }
+  .search .btn { height: 44px; border-radius: var(--radius); }
+  @media (max-width: 479px) {
+    .search .btn { padding-inline: 0.9rem; }
+    .search .btn :global(.arrow) { display: none; }
+  }
+
+  .popular {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .chip {
+    border: 1px solid var(--line-strong);
+    background: transparent;
+    border-radius: 999px;
+    padding: 0.25rem 0.8rem;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease), background var(--fast) var(--ease);
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-tint); }
+
+  /* Visual */
+  .visual { position: relative; }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .panel-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-sunken);
+  }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); }
+  .panel-title { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+
+  .panel-body { display: grid; grid-template-columns: 11.5rem 1fr; min-height: 17rem; }
+  .rail {
+    padding: 0.75rem;
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .rail li {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .rail li.active { background: var(--accent-tint); color: var(--accent); font-weight: 550; }
+
+  .preview { padding: 1rem 1.1rem; min-width: 0; }
+  .preview-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    margin-bottom: 0.9rem;
+  }
+  .ok {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--success);
+    background: var(--success-tint);
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+  }
+  pre {
+    margin: 0;
+    padding: 0.9rem 1rem;
+    background: var(--surface-sunken);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.75;
+    color: var(--ink-2);
+    overflow: hidden;
+    white-space: pre-wrap;
+  }
+  .k { color: var(--muted); }
+  .s { color: var(--accent); }
+  .v { color: var(--code-str); }
+  .b { color: var(--success); }
+
+  @media (max-width: 520px) {
+    .panel-body { grid-template-columns: 1fr; }
+    .rail { display: none; }
+  }
+</style>

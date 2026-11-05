@@ -1,0 +1,58 @@
+---
+import Icon from './Icon.astro';
+---
+
+<!-- Label/state are set by the script below; defaults keep it sensible without JS. -->
+<button class="btn btn-icon theme-toggle" type="button" aria-label="Switch to dark theme" data-theme-toggle>
+  <span class="sun"><Icon name="sun" size={20} /></span>
+  <span class="moon"><Icon name="moon" size={20} /></span>
+</button>
+
+<script>
+  const root = document.documentElement;
+  const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  const KEY = 'theme';
+
+  const current = () => (root.dataset.theme === 'dark' ? 'dark' : 'light');
+
+  const syncButton = () => {
+    if (!btn) return;
+    const dark = current() === 'dark';
+    btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+    btn.setAttribute('title', dark ? 'Switch to light theme' : 'Switch to dark theme');
+  };
+
+  const apply = (theme: 'light' | 'dark') => {
+    // Briefly disable transitions so every surface flips in the same frame.
+    root.classList.add('theme-switching');
+    root.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#111316' : '#fafaf7');
+    syncButton();
+    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
+  };
+
+  btn?.addEventListener('click', () => {
+    const next = current() === 'dark' ? 'light' : 'dark';
+    apply(next);
+    try { localStorage.setItem(KEY, next); } catch {}
+  });
+
+  // Follow the OS setting live, but only while the visitor hasn't chosen explicitly.
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  mq.addEventListener('change', (e) => {
+    let saved: string | null = null;
+    try { saved = localStorage.getItem(KEY); } catch {}
+    if (!saved) apply(e.matches ? 'dark' : 'light');
+  });
+
+  syncButton();
+</script>
+
+<style>
+  .theme-toggle { position: relative; }
+  .sun, .moon { display: grid; place-items: center; }
+  /* Show the icon for the theme you'll switch TO: moon in light mode, sun in dark mode. */
+  .sun { display: none; }
+  :global(:root[data-theme='dark']) .sun { display: grid; }
+  :global(:root[data-theme='dark']) .moon { display: none; }
+</style>
