@@ -1,0 +1,306 @@
+---
+/**
+ * JSON Formatter workspace. Markup + styles only; behaviour lives in src/scripts/jsonFormatter.js
+ * and the logic in src/lib/jsonFormatter.js.
+ */
+const placeholder = 'Paste your JSON here, for example:\n{\n  "name": "Toolora",\n  "free": true\n}';
+const indents = [
+  { value: '2', label: '2 spaces' },
+  { value: '4', label: '4 spaces' },
+  { value: 'tab', label: 'Tab' },
+];
+---
+
+<div class="jf" data-jf>
+  <!-- Toolbar -->
+  <div class="toolbar" role="group" aria-label="JSON actions">
+    <fieldset class="indent">
+      <legend>Indent</legend>
+      <div class="segmented">
+        {indents.map((o) => (
+          <label class="seg">
+            <input type="radio" name="indent" value={o.value} checked={o.value === '2'} />
+            <span>{o.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+
+    <div class="run">
+      <button class="btn btn-primary" type="button" data-jf-format title="Format (Ctrl+Enter)" disabled>Format</button>
+      <button class="btn btn-secondary" type="button" data-jf-minify disabled>Minify</button>
+      <button class="btn btn-secondary" type="button" data-jf-validate disabled>Validate</button>
+    </div>
+  </div>
+
+  <!-- Validation status -->
+  <div class="status" data-jf-status data-state="idle" role="status" aria-live="polite">
+    <span class="badge" aria-hidden="true"></span>
+    <div class="status-body">
+      <p class="status-line"><strong data-jf-status-title>Ready</strong><span data-jf-status-detail></span></p>
+      <div class="error" data-jf-error hidden>
+        <p class="error-msg" data-jf-error-loc></p>
+        <pre class="frame" data-jf-error-frame hidden></pre>
+        <p class="hint" data-jf-error-hint hidden></p>
+        <button class="btn btn-secondary btn-sm" type="button" data-jf-jump hidden>Go to error</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panels -->
+  <div class="panels">
+    <section class="panel" aria-labelledby="jf-in-label">
+      <div class="panel-head">
+        <label id="jf-in-label" for="jf-input">Input</label>
+        <div class="panel-actions" data-jf-input-actions>
+          <button class="btn btn-secondary btn-sm" type="button" data-jf-example>Load example</button>
+          <button class="btn btn-secondary btn-sm" type="button" data-jf-clear disabled>Clear</button>
+        </div>
+        <div class="confirm" role="group" aria-label="Confirm" data-jf-confirm hidden>
+          <span data-jf-confirm-text>Clear the input and output?</span>
+          <button class="btn btn-primary btn-sm danger" type="button" data-jf-confirm-yes>Yes, clear</button>
+          <button class="btn btn-secondary btn-sm" type="button" data-jf-confirm-no>Keep</button>
+        </div>
+      </div>
+      <textarea
+        id="jf-input"
+        class="code"
+        wrap="off"
+        spellcheck="false"
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        placeholder={placeholder}
+        data-jf-input></textarea>
+      <p class="meta" data-jf-input-meta>Empty</p>
+    </section>
+
+    <section class="panel" aria-labelledby="jf-out-label">
+      <div class="panel-head">
+        <label id="jf-out-label" for="jf-output">Output</label>
+        <div class="panel-actions">
+          <button class="btn btn-secondary btn-sm" type="button" data-jf-copy disabled>Copy</button>
+          <button class="btn btn-secondary btn-sm" type="button" data-jf-download disabled>Download .json</button>
+        </div>
+      </div>
+      <div class="out-wrap">
+        <textarea id="jf-output" class="code" wrap="off" readonly spellcheck="false" hidden data-jf-output></textarea>
+        <div
+          class="code vview"
+          tabindex="0"
+          role="region"
+          aria-labelledby="jf-out-label"
+          aria-describedby="jf-view-note"
+          hidden
+          data-jf-viewer></div>
+        <div class="empty" data-jf-output-empty data-state="idle">
+          <p class="empty-title" data-jf-output-empty-title>Output appears here</p>
+          <p class="empty-text" data-jf-output-empty-text>Choose Format or Minify to see the result.</p>
+        </div>
+      </div>
+      <p class="view-note" id="jf-view-note" data-jf-view-note hidden></p>
+      <div class="meta-row">
+        <p class="meta" data-jf-output-meta></p>
+        <p class="stale" data-jf-stale hidden>Out of date: the input has changed since this output was made.</p>
+      </div>
+      <p class="toast" role="status" aria-live="polite" data-jf-toast></p>
+    </section>
+  </div>
+
+  <p class="privacy">Processed in your browser. Your JSON is not uploaded or saved.</p>
+</div>
+
+<script>
+  import '../../scripts/jsonFormatter.js';
+</script>
+
+<style>
+  .jf { display: grid; gap: 1rem; }
+  dl, dd, dt, legend, fieldset { margin: 0; padding: 0; border: 0; }
+
+  /* ---- Toolbar ---- */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.9rem 1.5rem;
+    padding: 0.9rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .indent legend { font-size: 0.75rem; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+  .segmented { display: inline-flex; padding: 3px; gap: 2px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--radius); }
+  .seg { position: relative; cursor: pointer; }
+  .seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .seg span {
+    display: block;
+    padding: 0.4rem 0.8rem;
+    border-radius: calc(var(--radius) - 3px);
+    font-size: 0.875rem;
+    font-weight: 550;
+    color: var(--ink-2);
+    white-space: nowrap;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  }
+  .seg:hover span { color: var(--ink); }
+  .seg input:checked + span { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line-strong); }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .run { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  /* ---- Status ---- */
+  .status {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--line);
+    border-left-width: 3px;
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .status .badge {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
+    border-radius: 50%;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1;
+    background: var(--surface-sunken);
+    color: var(--muted);
+  }
+  .status-body { min-width: 0; flex: 1; }
+  .status-line { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: baseline; font-size: 0.9375rem; }
+  .status-line strong { color: var(--ink); }
+  .status-line span { color: var(--muted); font-size: 0.875rem; overflow-wrap: anywhere; }
+  .status[data-state='idle'] .badge::before { content: 'i'; font-family: var(--font-display); font-style: italic; }
+  .status[data-state='busy'] .badge::before { content: '\2026'; }
+  .status[data-state='valid'] { border-left-color: var(--success); background: color-mix(in srgb, var(--success-tint) 55%, var(--surface)); }
+  .status[data-state='valid'] .badge { background: var(--success-tint); color: var(--success); }
+  .status[data-state='valid'] .badge::before { content: '\2713'; }
+  .status[data-state='invalid'] { border-left-color: var(--clay); background: color-mix(in srgb, var(--clay-tint) 55%, var(--surface)); }
+  .status[data-state='invalid'] .badge { background: var(--clay-tint); color: var(--clay-text); }
+  .status[data-state='invalid'] .badge::before { content: '!'; }
+  .status[data-state='invalid'] .status-line strong { color: var(--clay-text); }
+
+  .error { margin-top: 0.6rem; display: grid; gap: 0.6rem; justify-items: start; }
+  .error[hidden], .frame[hidden], .hint[hidden], [data-jf-jump][hidden] { display: none; }
+  .error-msg { font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+  .frame {
+    max-width: 100%;
+    margin: 0;
+    padding: 0.6rem 0.8rem;
+    overflow-x: auto;
+    background: var(--surface-inset);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--ink);
+    tab-size: 2;
+  }
+  .hint { font-size: 0.9375rem; color: var(--ink-2); }
+
+  /* ---- Panels ---- */
+  .panels { display: grid; gap: 1rem; align-items: start; }
+  @media (min-width: 900px) { .panels { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
+  .panel {
+    padding: clamp(0.85rem, 2vw, 1.25rem);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    min-width: 0;
+  }
+  .panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 0.75rem; min-height: 36px; }
+  .panel-head label { font-family: var(--font-display); font-size: 1.1875rem; font-weight: 600; color: var(--ink); }
+  .panel-actions, .confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+  .panel-actions[hidden], .confirm[hidden] { display: none; }
+  .confirm span { font-size: 0.9375rem; font-weight: 600; color: var(--ink); margin-right: 0.15rem; }
+  .danger { background: var(--clay-text); }
+  .danger:hover { background: var(--clay-text); filter: brightness(0.92); }
+  :global(:root[data-theme='dark']) .danger { background: var(--clay); color: var(--accent-ink); }
+
+  .code {
+    display: block;
+    width: 100%;
+    height: clamp(18rem, 55vh, 36rem);
+    padding: 0.85rem 1rem;
+    background: var(--surface-inset);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--ink);
+    tab-size: 2;
+    white-space: pre;
+    overflow: auto;
+    resize: vertical;
+    transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+  }
+  .code::placeholder { color: var(--placeholder); }
+  .code:focus, .code:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-tint); }
+  textarea[readonly].code { background: var(--surface-sunken); }
+  .code[hidden] { display: none; }
+
+  /* Windowed viewer for very large output (see src/scripts/virtualViewer.js) */
+  .vview { --vlh: 21px; position: relative; padding: 0; line-height: var(--vlh); resize: vertical; }
+  .vview :global(.vsizer) { position: relative; }
+  .vview :global(.vlines) { position: absolute; margin: 0; font: inherit; line-height: var(--vlh); color: inherit; white-space: pre; tab-size: 2; }
+  .vview:focus, .vview:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-tint); }
+  .view-note { margin-top: 0.6rem; font-size: 0.8125rem; line-height: 1.5; color: var(--muted); }
+  .view-note[hidden] { display: none; }
+  @media (max-width: 639px) {
+    /* 16px on inputs avoids iOS zoom-on-focus; the read-only output can stay compact */
+    textarea[data-jf-input] { font-size: 1rem; }
+    .code { height: clamp(15rem, 45vh, 26rem); }
+  }
+
+  .empty {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 0.4rem;
+    height: clamp(18rem, 55vh, 36rem);
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--surface-inset);
+  }
+  .empty[hidden] { display: none; }
+  .empty-title { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; color: var(--ink); }
+  .empty-text { max-width: 24rem; font-size: 0.9375rem; color: var(--muted); }
+  .empty[data-state='error'] { border-color: color-mix(in srgb, var(--clay) 45%, var(--line-strong)); }
+  .empty[data-state='error'] .empty-title { color: var(--clay-text); }
+  @media (max-width: 639px) { .empty { height: clamp(10rem, 28vh, 16rem); } }
+
+  .meta-row { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; justify-content: space-between; margin-top: 0.7rem; }
+  .meta { font-size: 0.8125rem; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 1.2em; }
+  .stale { font-size: 0.8125rem; font-weight: 600; color: var(--clay-text); }
+  .stale[hidden] { display: none; }
+  .toast { margin-top: 0.4rem; min-height: 1.3em; font-size: 0.875rem; font-weight: 600; }
+  .toast[data-kind='ok'] { color: var(--success); }
+  .toast[data-kind='bad'] { color: var(--clay-text); }
+  .toast[data-kind='ok']::before { content: '\2713\00a0'; }
+  .privacy { font-size: 0.8125rem; color: var(--muted); }
+
+  @media (max-width: 639px), (pointer: coarse) {
+    .jf :global(.btn) { height: 44px; padding-inline: 1.1rem; }
+    .seg span { padding-block: 0.65rem; }
+  }
+  @media (max-width: 479px) {
+    .confirm span { flex-basis: 100%; margin-right: 0; }
+    .run :global(.btn-primary) { flex: 1 1 100%; }
+    .run :global(.btn-secondary) { flex: 1 1 0; }
+  }
+</style>

@@ -1,0 +1,327 @@
+---
+/**
+ * Image Compressor workspace. Markup + styles only; behaviour lives in src/scripts/imageCompressor.js,
+ * the rules in src/lib/imageCompressor.js and the browser encoding in src/lib/imageCodec.js.
+ */
+import { PRESETS, MAX_FILE_BYTES, MAX_PIXELS } from '../../lib/imageCompressor.js';
+
+const presets = Object.entries(PRESETS).map(([value, p]) => ({ value, ...p }));
+const formats = [
+  { value: 'original', label: 'Same as original' },
+  { value: 'image/jpeg', label: 'JPEG' },
+  { value: 'image/png', label: 'PNG' },
+  { value: 'image/webp', label: 'WebP' },
+];
+---
+
+<div class="ic" data-ic>
+  <!-- ============ Upload ============ -->
+  <section class="card drop" data-ic-drop aria-labelledby="ic-drop-title">
+    <input
+      id="ic-file"
+      class="sr-only"
+      type="file"
+      multiple
+      accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+      tabindex="-1"
+      aria-label="Choose images to compress"
+      data-ic-input />
+    <div class="drop-body">
+      <h2 id="ic-drop-title" class="drop-title">Add your images</h2>
+      <p class="drop-lead">Drag and drop JPG, PNG or WebP images here, or choose them from your device. You can add as many as you like.</p>
+      <button class="btn btn-primary" type="button" data-ic-browse>Browse files</button>
+      <p class="drop-hint">
+        Up to {MAX_FILE_BYTES / 1048576} MB and {MAX_PIXELS / 1e6} megapixels per image. Your images stay on your device: they are processed in your browser and are never uploaded.
+      </p>
+    </div>
+  </section>
+  <p class="notes" role="status" aria-live="polite" data-ic-notes hidden></p>
+
+  <div class="layout">
+    <!-- ============ Settings ============ -->
+    <section class="card settings" aria-labelledby="ic-set-title">
+      <h2 id="ic-set-title" class="card-title">Compression settings</h2>
+
+      <fieldset class="group">
+        <legend>Quality</legend>
+        <div class="segmented three" role="radiogroup">
+          {presets.map((p) => (
+            <label class="seg">
+              <input type="radio" name="ic-preset" value={p.value} checked={p.value === 'balanced'} />
+              <span>{p.label}</span>
+            </label>
+          ))}
+        </div>
+        <p class="help" data-ic-preset-hint></p>
+      </fieldset>
+
+      <div class="group">
+        <label for="ic-quality" class="slider-label">
+          Fine-tune quality <output class="slider-out" for="ic-quality" data-ic-quality-out>80%</output>
+        </label>
+        <input id="ic-quality" class="slider" type="range" min="10" max="100" step="1" value="80" data-ic-quality />
+        <div class="slider-scale" aria-hidden="true"><span>Smaller file</span><span>Higher quality</span></div>
+        <p class="help" data-ic-quality-note></p>
+      </div>
+
+      <fieldset class="group">
+        <legend>Save as</legend>
+        <div class="segmented wrap" role="radiogroup">
+          {formats.map((f) => (
+            <label class="seg">
+              <input type="radio" name="ic-format" value={f.value} checked={f.value === 'original'} />
+              <span>{f.label}</span>
+            </label>
+          ))}
+        </div>
+        <p class="help" data-ic-format-note></p>
+      </fieldset>
+
+      <div class="group bg" data-ic-bg-field hidden>
+        <label for="ic-bg">Background for transparent areas</label>
+        <div class="bg-row">
+          <input id="ic-bg" class="color" type="color" value="#ffffff" data-ic-bg />
+          <output class="bg-out" for="ic-bg" data-ic-bg-out>#FFFFFF</output>
+        </div>
+        <p class="help">JPEG cannot store transparency, so transparent areas are filled with this colour. White is the default.</p>
+      </div>
+
+      <p class="help fine">Compressed files do not include photo details such as camera model or location (EXIF). Your original files are never changed.</p>
+    </section>
+
+    <!-- ============ Results ============ -->
+    <section class="card results" aria-labelledby="ic-res-title">
+      <div class="res-head">
+        <h2 id="ic-res-title" class="card-title">Your images <span class="count" data-ic-count></span></h2>
+        <div class="toolbar-actions" data-ic-toolbar-actions>
+          <button class="btn btn-primary btn-sm" type="button" data-ic-compress-all disabled>Compress</button>
+          <button class="btn btn-secondary btn-sm" type="button" data-ic-cancel hidden>Stop</button>
+          <button class="btn btn-secondary btn-sm" type="button" data-ic-download-all hidden>Download</button>
+          <button class="btn btn-secondary btn-sm" type="button" data-ic-clear-all disabled>Clear all</button>
+        </div>
+        <div class="confirm" role="group" aria-label="Confirm clearing all images" data-ic-confirm hidden>
+          <span>Remove all images and results?</span>
+          <button class="btn btn-primary btn-sm danger" type="button" data-ic-confirm-yes>Yes, clear all</button>
+          <button class="btn btn-secondary btn-sm" type="button" data-ic-confirm-no>Keep</button>
+        </div>
+      </div>
+
+      <div class="progress" data-ic-progress hidden>
+        <div class="bar" role="progressbar" aria-label="Compression progress" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" data-ic-bar>
+          <span class="bar-fill" data-ic-bar-fill></span>
+        </div>
+        <p class="progress-text" data-ic-progress-text></p>
+      </div>
+      <p class="summary" data-ic-summary hidden></p>
+      <p class="toast" role="status" aria-live="polite" data-ic-toast></p>
+      <p class="sr-only" role="status" aria-live="polite" data-ic-live></p>
+
+      <div class="empty" data-ic-empty>
+        <p class="empty-title">No images yet</p>
+        <p class="empty-text">Add images above. They will appear here, ready to compress.</p>
+      </div>
+      <ul class="list" aria-label="Images" data-ic-list hidden></ul>
+    </section>
+  </div>
+
+  <!-- One list item (cloned by the script) -->
+  <template data-ic-template>
+    <li class="item">
+      <div class="thumb" data-thumb aria-hidden="true"></div>
+      <div class="body">
+        <p class="name" data-name></p>
+        <p class="meta" data-meta></p>
+        <p class="state" data-state></p>
+        <div class="info" data-info hidden></div>
+        <dl class="result" data-result hidden>
+          <div><dt>Original</dt><dd data-r-orig></dd></div>
+          <div><dt>Compressed</dt><dd data-r-new></dd></div>
+          <div class="wide"><dt>Change</dt><dd class="change" data-r-change></dd></div>
+          <div><dt>Format</dt><dd data-r-format></dd></div>
+          <div><dt>Dimensions</dt><dd data-r-dims></dd></div>
+        </dl>
+        <p class="warn" data-warn hidden></p>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-primary btn-sm" type="button" data-compress>Compress</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-download hidden>Download</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-compare aria-expanded="false" hidden>Compare</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-keep hidden>Keep original</button>
+        <button class="btn btn-secondary btn-sm remove" type="button" data-remove>Remove</button>
+      </div>
+      <div class="cmp" data-cmp hidden></div>
+    </li>
+  </template>
+</div>
+
+<script>
+  import '../../scripts/imageCompressor.js';
+</script>
+
+<style>
+  .ic { display: grid; gap: 1.25rem; }
+  .card {
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    min-width: 0;
+  }
+  .card-title { font-size: 1.1875rem; }
+  fieldset, legend { margin: 0; padding: 0; border: 0; }
+  dl, dd, dt { margin: 0; }
+
+  /* ---- Upload ---- */
+  .drop {
+    border: 2px dashed var(--line-strong);
+    background: var(--surface-inset);
+    text-align: center;
+    transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+  }
+  .drop[data-dragging='true'] { border-color: var(--accent); background: var(--accent-tint); border-style: solid; }
+  .drop-body { display: grid; justify-items: center; gap: 0.75rem; padding-block: 0.75rem; }
+  .drop-title { font-size: 1.375rem; }
+  .drop-lead { max-width: 34rem; color: var(--ink-2); }
+  .drop-hint { max-width: 38rem; font-size: 0.8125rem; color: var(--muted); }
+  .notes { font-size: 0.875rem; color: var(--ink-2); padding: 0.6rem 0.9rem; border: 1px solid color-mix(in srgb, var(--clay) 40%, var(--line)); border-left-width: 3px; border-radius: var(--radius); background: var(--clay-tint); display: grid; gap: 0.2rem; }
+  .notes[hidden] { display: none; }
+
+  /* ---- Layout ---- */
+  .layout { display: grid; gap: 1.25rem; align-items: start; }
+  @media (min-width: 960px) {
+    .layout { grid-template-columns: 21rem minmax(0, 1fr); gap: 1.5rem; }
+    .settings { position: sticky; top: calc(var(--header-h) + 1rem); }
+  }
+
+  /* ---- Settings ---- */
+  .settings { display: grid; gap: 1.25rem; }
+  .group { display: grid; gap: 0.5rem; min-width: 0; }
+  legend, .group > label { font-weight: 650; font-size: 0.9375rem; color: var(--ink); }
+  .help { font-size: 0.8125rem; line-height: 1.5; color: var(--muted); }
+  .help:empty { display: none; }
+  .help.fine { padding-top: 0.5rem; border-top: 1px solid var(--line); }
+  .help strong { color: var(--clay-text); }
+  .segmented { display: inline-flex; flex-wrap: wrap; padding: 3px; gap: 2px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--radius); max-width: 100%; }
+  .seg { position: relative; cursor: pointer; flex: 1 1 auto; }
+  .seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .segmented.three { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .segmented.three .seg span { padding-inline: 0.25rem; white-space: normal; font-size: 0.8125rem; line-height: 1.25; display: grid; place-items: center; min-height: 2.25rem; }
+  .seg span { display: block; padding: 0.45rem 0.8rem; border-radius: calc(var(--radius) - 3px); font-size: 0.875rem; font-weight: 550; color: var(--ink-2); text-align: center; white-space: nowrap; transition: background var(--fast) var(--ease), color var(--fast) var(--ease); }
+  .seg:hover span { color: var(--ink); }
+  .seg input:checked + span { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line-strong); }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .seg input:disabled + span { opacity: 0.45; text-decoration: line-through; cursor: not-allowed; }
+  .slider-label { display: flex; justify-content: space-between; gap: 1rem; }
+  .slider-out { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 700; }
+  .slider { width: 100%; height: 28px; accent-color: var(--accent); cursor: pointer; margin: 0; }
+  .slider:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+  .slider-scale { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); }
+  .bg-row { display: flex; align-items: center; gap: 0.75rem; }
+  .color { width: 3.25rem; height: 2.5rem; padding: 2px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); cursor: pointer; }
+  .color:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .bg-out { font-family: var(--font-mono); font-size: 0.875rem; color: var(--ink-2); }
+  .bg[hidden] { display: none; }
+
+  /* ---- Results ---- */
+  .res-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem 1rem; margin-bottom: 0.9rem; }
+  .count { font-family: var(--font-sans); font-size: 0.875rem; font-weight: 500; color: var(--muted); margin-left: 0.4rem; }
+  .toolbar-actions, .confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+  .toolbar-actions[hidden], .confirm[hidden] { display: none; }
+  .confirm span { font-size: 0.9375rem; font-weight: 600; color: var(--ink); }
+  .danger { background: var(--clay-text); }
+  .danger:hover { background: var(--clay-text); filter: brightness(0.92); }
+  :global(:root[data-theme='dark']) .danger { background: var(--clay); color: var(--accent-ink); }
+
+  .progress { margin-bottom: 0.75rem; }
+  .progress[hidden] { display: none; }
+  .bar { height: 10px; border-radius: 999px; background: var(--surface-sunken); border: 1px solid var(--line); overflow: hidden; }
+  .bar-fill { display: block; height: 100%; width: 0; background: var(--accent); border-radius: inherit; transition: width var(--med) var(--ease); }
+  .progress-text { margin-top: 0.4rem; font-size: 0.875rem; color: var(--ink-2); overflow-wrap: anywhere; }
+  .summary { margin-bottom: 0.5rem; padding: 0.6rem 0.9rem; font-size: 0.9375rem; font-weight: 600; color: var(--ink); background: var(--success-tint); border: 1px solid color-mix(in srgb, var(--success) 30%, var(--line)); border-left-width: 3px; border-radius: var(--radius); }
+  .summary[hidden] { display: none; }
+  .toast { min-height: 1.3em; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; }
+  .toast[data-kind='ok'] { color: var(--success); }
+  .toast[data-kind='bad'] { color: var(--clay-text); }
+  .toast[data-kind='ok']::before { content: '\2713\00a0'; }
+  .toast[data-kind='bad']::before { content: '!\00a0'; }
+
+  .empty { padding: 2.5rem 1rem; text-align: center; border: 1px dashed var(--line-strong); border-radius: var(--radius); background: var(--surface-inset); }
+  .empty[hidden] { display: none; }
+  .empty-title { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; color: var(--ink); }
+  .empty-text { margin-top: 0.3rem; font-size: 0.9375rem; color: var(--muted); }
+
+  .list { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+  .list[hidden] { display: none; }
+</style>
+
+<!-- Item styles are global because the items are created from the <template> by the script. -->
+<style is:global>
+  .ic [hidden] { display: none !important; }
+  .ic .item {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+    gap: 0.75rem 1rem;
+    align-items: start;
+    padding: 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-inset);
+  }
+  .ic .item[data-status='rejected'], .ic .item[data-status='failed'] { border-color: color-mix(in srgb, var(--clay) 50%, var(--line)); background: color-mix(in srgb, var(--clay-tint) 40%, var(--surface-inset)); }
+  .ic .thumb { display: grid; place-items: center; width: 5.5rem; height: 5.5rem; border-radius: var(--radius-sm); border: 1px solid var(--line); overflow: hidden; background: var(--surface-sunken); }
+  .ic .thumb[data-alpha='true'] { background-color: #fff; background-image: linear-gradient(45deg, #d9d4c8 25%, transparent 25%, transparent 75%, #d9d4c8 75%), linear-gradient(45deg, #d9d4c8 25%, transparent 25%, transparent 75%, #d9d4c8 75%); background-size: 12px 12px; background-position: 0 0, 6px 6px; }
+  .ic .thumb canvas { display: block; max-width: 100%; max-height: 100%; }
+  .ic .body { min-width: 0; display: grid; gap: 0.2rem; }
+  .ic .name { font-weight: 650; color: var(--ink); overflow-wrap: anywhere; line-height: 1.35; }
+  .ic .meta { font-size: 0.8125rem; color: var(--muted); }
+  .ic .state { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; font-weight: 650; color: var(--ink-2); }
+  .ic .state-icon { display: inline-grid; place-items: center; width: 1.1rem; height: 1.1rem; border-radius: 50%; font-size: 0.7rem; background: var(--surface-sunken); }
+  .ic .state[data-kind='done'] { color: var(--success); }
+  .ic .state[data-kind='done'] .state-icon { background: var(--success-tint); }
+  .ic .state[data-kind='error'] { color: var(--clay-text); }
+  .ic .state[data-kind='error'] .state-icon { background: var(--clay-tint); }
+  .ic .state[data-kind='stale'] { color: var(--clay-text); }
+  .ic .info { display: grid; gap: 0.2rem; }
+  .ic .info[hidden] { display: none; }
+  .ic .item-note { font-size: 0.8125rem; line-height: 1.5; color: var(--ink-2); overflow-wrap: anywhere; }
+  .ic .state[data-kind='error'] ~ .info .item-note { color: var(--clay-text); font-weight: 600; }
+  .ic .result { display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: 0.4rem 1rem; margin-top: 0.35rem; padding-top: 0.5rem; border-top: 1px solid var(--line); }
+  .ic .result[hidden] { display: none; }
+  .ic .result .wide { grid-column: 1 / -1; }
+  .ic .result dt { font-size: 0.6875rem; font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .ic .result dd { font-size: 0.9375rem; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .ic .change[data-dir='smaller'] { color: var(--success); }
+  .ic .change[data-dir='larger'] { color: var(--clay-text); }
+  .ic .warn { margin-top: 0.2rem; font-size: 0.8125rem; line-height: 1.5; color: var(--clay-text); font-weight: 600; }
+  .ic .warn[hidden] { display: none; }
+  .ic .item-actions { display: flex; flex-direction: column; align-items: stretch; gap: 0.4rem; min-width: 8.5rem; }
+  .ic .item-actions .btn[hidden] { display: none; }
+  .ic .cmp { grid-column: 1 / -1; }
+  .ic .cmp[hidden] { display: none; }
+
+  /* Before / after comparison */
+  .ic .cmp-stage { --pos: 50%; position: relative; max-width: 46rem; margin-inline: auto; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; line-height: 0; user-select: none;
+    background-color: #fff; background-image: linear-gradient(45deg, #d9d4c8 25%, transparent 25%, transparent 75%, #d9d4c8 75%), linear-gradient(45deg, #d9d4c8 25%, transparent 25%, transparent 75%, #d9d4c8 75%); background-size: 16px 16px; background-position: 0 0, 8px 8px; }
+  .ic .cmp-stage img { display: block; width: 100%; height: auto; }
+  .ic .cmp-before { position: absolute; inset: 0; height: 100% !important; object-fit: fill; clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+  .ic .cmp-handle { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 3px; margin-left: -1.5px; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45); pointer-events: none; }
+  .ic .cmp-label { position: absolute; bottom: 0.5rem; padding: 0.2rem 0.55rem; font: 600 0.75rem/1.4 var(--font-sans); color: #fff; background: rgba(20, 22, 18, 0.78); border-radius: 999px; pointer-events: none; }
+  .ic .cmp-label-l { left: 0.5rem; }
+  .ic .cmp-label-r { right: 0.5rem; }
+  .ic .cmp-range { display: block; width: min(100%, 46rem); margin: 0.6rem auto 0; accent-color: var(--accent); height: 28px; cursor: ew-resize; }
+  .ic .cmp-range:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+
+  @media (max-width: 639px), (pointer: coarse) {
+    .ic .btn { height: 44px; padding-inline: 1.1rem; }
+    .ic .seg span { padding-block: 0.65rem; }
+  }
+  @media (max-width: 639px) {
+    .ic .item { grid-template-columns: 4.5rem minmax(0, 1fr); }
+    .ic .thumb { width: 4.5rem; height: 4.5rem; }
+    .ic .item-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; min-width: 0; }
+    .ic .item-actions .btn { flex: 1 1 auto; }
+    .ic .confirm span { flex-basis: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { .ic .bar-fill { transition: none; } }
+</style>

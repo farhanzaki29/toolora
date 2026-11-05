@@ -1,0 +1,318 @@
+---
+/**
+ * WiFi QR Generator workspace. Markup + styles only; behaviour lives in src/scripts/wifiQr.js,
+ * payload/validation in src/lib/wifiQr.js and QR rendering in src/lib/qr.js.
+ */
+const securities = [
+  { value: 'WPA', label: 'WPA / WPA2 / WPA3' },
+  { value: 'WEP', label: 'WEP' },
+  { value: 'nopass', label: 'None (open)' },
+];
+---
+
+<div class="wq" data-wq>
+  <div class="layout">
+    <!-- ================= Form ================= -->
+    <form class="card form" data-wq-form novalidate autocomplete="off" aria-labelledby="wq-form-title">
+      <h2 id="wq-form-title" class="card-title">Network details</h2>
+
+      <div class="field">
+        <label for="wq-ssid">Network name (SSID)</label>
+        <input
+          id="wq-ssid"
+          class="input"
+          type="text"
+          name="ssid"
+          required
+          aria-required="true"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          aria-describedby="wq-ssid-msg"
+          data-wq-ssid />
+        <ul class="msgs" id="wq-ssid-msg" aria-live="polite" data-wq-ssid-msg hidden></ul>
+      </div>
+
+      <fieldset class="field">
+        <legend>Security</legend>
+        <div class="segmented">
+          {securities.map((s) => (
+            <label class="seg">
+              <input type="radio" name="security" value={s.value} checked={s.value === 'WPA'} />
+              <span>{s.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <div class="field" data-wq-password-field data-disabled="false">
+        <label for="wq-password">Password</label>
+        <div class="pw">
+          <input
+            id="wq-password"
+            class="input"
+            type="password"
+            name="password"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            aria-describedby="wq-pass-help wq-pass-msg"
+            data-wq-password />
+          <button class="btn btn-secondary btn-sm" type="button" aria-pressed="false" aria-label="Show password" data-wq-toggle-password>Show</button>
+        </div>
+        <p class="help" id="wq-pass-help" data-wq-password-help>Shown only on this page. It is never saved or sent anywhere.</p>
+        <ul class="msgs" id="wq-pass-msg" aria-live="polite" data-wq-password-msg hidden></ul>
+      </div>
+
+      <label class="check">
+        <input type="checkbox" name="hidden" data-wq-hidden />
+        <span>
+          This is a hidden network
+          <small>Choose this if the network doesn’t broadcast its name.</small>
+        </span>
+      </label>
+
+      <div class="form-actions">
+        <button class="btn btn-secondary btn-sm" type="button" data-wq-clear disabled>Clear</button>
+        <p class="privacy">Made in your browser. Nothing is uploaded or saved.</p>
+      </div>
+    </form>
+
+    <!-- ================= Preview ================= -->
+    <section class="card preview" aria-labelledby="wq-prev-title">
+      <h2 id="wq-prev-title" class="card-title">QR code</h2>
+
+      <div class="stage" data-wq-stage data-state="empty">
+        <div class="empty" data-wq-empty>
+          <p class="empty-title" data-wq-empty-title>Your QR code appears here</p>
+          <p class="empty-text">Enter the network details and the code is created instantly, right on this page.</p>
+          <ul class="empty-list" data-wq-empty-list hidden></ul>
+        </div>
+        <div class="qr" data-wq-qr hidden></div>
+      </div>
+
+      <div class="cap" data-wq-caption-wrap hidden>
+        <p class="cap-name" data-wq-caption></p>
+        <p class="cap-sub" data-wq-caption-sub></p>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary btn-sm" type="button" data-wq-png disabled>Download PNG</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-wq-svg disabled>Download SVG</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-wq-print disabled>Print</button>
+      </div>
+      <p class="toast" role="status" aria-live="polite" data-wq-toast></p>
+      <p class="sr-only" role="status" aria-live="polite" data-wq-live></p>
+
+      <details class="encoded" data-wq-encoded-wrap hidden>
+        <summary>Show the encoded text</summary>
+        <p class="encoded-note">This is what the QR code contains. The password is hidden unless you chose to show it.</p>
+        <pre><code data-wq-encoded></code></pre>
+      </details>
+    </section>
+  </div>
+
+  <div class="notes">
+    <section aria-labelledby="wq-scan-title">
+      <h2 id="wq-scan-title">How to use the code</h2>
+      <p>
+        Open the camera app on a recent iPhone or Android phone and point it at the code. Your phone should offer to join the network.
+        Older phones may need a QR scanner app.
+      </p>
+    </section>
+    <section aria-labelledby="wq-safe-title">
+      <h2 id="wq-safe-title">Keep in mind</h2>
+      <p>
+        Anyone who can scan or photograph this code can join your network, so share or print it only where that is fine.
+        The printout shows the network name, never the password as text.
+      </p>
+    </section>
+  </div>
+</div>
+
+<script>
+  import '../../scripts/wifiQr.js';
+</script>
+
+<style>
+  .wq { display: grid; gap: 1.5rem; }
+  .layout { display: grid; gap: 1.25rem; align-items: start; }
+  @media (min-width: 900px) {
+    .layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 1.5rem; }
+    .preview { position: sticky; top: calc(var(--header-h) + 1rem); }
+  }
+
+  .card {
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    min-width: 0;
+  }
+  .card-title { font-size: 1.1875rem; margin-bottom: 1.1rem; }
+  fieldset, legend { margin: 0; padding: 0; border: 0; }
+
+  /* ---- Form ---- */
+  .form { display: grid; gap: 1.1rem; }
+  .form .card-title { margin-bottom: 0; }
+  .field { display: grid; gap: 0.4rem; min-width: 0; }
+  label, legend { font-weight: 600; font-size: 0.9375rem; color: var(--ink); }
+  .input {
+    width: 100%;
+    min-width: 0;
+    padding: 0.7rem 0.85rem;
+    background: var(--surface-inset);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    color: var(--ink);
+    transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease), opacity var(--fast) var(--ease);
+  }
+  .input:focus, .input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-tint); }
+  .input[aria-invalid='true'] { border-color: var(--clay); }
+  .input:disabled { opacity: 0.55; cursor: not-allowed; background: var(--surface-sunken); }
+  [data-disabled='true'] label { color: var(--muted); }
+
+  .pw { display: flex; gap: 0.5rem; align-items: stretch; }
+  .pw .btn { flex: none; min-width: 4.25rem; height: auto; }
+  .help { font-size: 0.8125rem; color: var(--muted); }
+
+  .msgs { display: grid; gap: 0.25rem; margin: 0; padding: 0; list-style: none; font-size: 0.875rem; }
+  .msgs[hidden] { display: none; }
+  .msgs li[data-kind='error'] { color: var(--clay-text); font-weight: 600; }
+  .msgs li[data-kind='warn'] { color: var(--ink-2); padding-left: 0.9rem; position: relative; }
+  .msgs li[data-kind='warn']::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--clay); }
+
+  .segmented { display: inline-flex; flex-wrap: wrap; padding: 3px; gap: 2px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--radius); max-width: 100%; }
+  .seg { position: relative; cursor: pointer; }
+  .seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .seg span {
+    display: block;
+    padding: 0.45rem 0.85rem;
+    border-radius: calc(var(--radius) - 3px);
+    font-size: 0.875rem;
+    font-weight: 550;
+    color: var(--ink-2);
+    white-space: nowrap;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  }
+  .seg:hover span { color: var(--ink); }
+  .seg input:checked + span { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line-strong); }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .check { display: flex; gap: 0.7rem; align-items: flex-start; cursor: pointer; font-weight: 600; }
+  .check input { width: 1.15rem; height: 1.15rem; margin: 0.15rem 0 0; accent-color: var(--accent); flex: none; cursor: pointer; }
+  .check small { display: block; margin-top: 0.1rem; font-size: 0.8125rem; font-weight: 400; color: var(--muted); }
+
+  .form-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem 1rem; padding-top: 0.25rem; }
+  .privacy { font-size: 0.8125rem; color: var(--muted); }
+
+  /* ---- Preview ---- */
+  .stage { display: grid; place-items: center; }
+  .empty {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 0.45rem;
+    width: min(100%, 22rem);
+    aspect-ratio: 1;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--surface-inset);
+  }
+  .empty[hidden] { display: none; }
+  .empty-title { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; color: var(--ink); }
+  .empty-text { max-width: 17rem; font-size: 0.9375rem; color: var(--muted); }
+  .empty-list { display: grid; gap: 0.2rem; margin: 0.3rem 0 0; padding: 0; list-style: none; font-size: 0.875rem; font-weight: 550; color: var(--ink-2); }
+  .empty-list[hidden] { display: none; }
+
+  /* The code is always black on white (never inverted in dark mode) so every scanner can read it. */
+  .qr {
+    width: min(100%, 22rem);
+    aspect-ratio: 1;
+    background: #ffffff;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .qr[hidden] { display: none; }
+  .qr :global(svg) { display: block; width: 100%; height: 100%; }
+
+  .cap { margin-top: 1rem; text-align: center; min-width: 0; }
+  .cap[hidden] { display: none; }
+  .cap-name { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; white-space: pre-wrap; }
+  .cap-sub { margin-top: 0.15rem; font-size: 0.875rem; color: var(--muted); }
+
+  .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 1.1rem; }
+  .toast { margin-top: 0.6rem; min-height: 1.3em; text-align: center; font-size: 0.875rem; font-weight: 600; }
+  .toast[data-kind='ok'] { color: var(--success); }
+  .toast[data-kind='bad'] { color: var(--clay-text); }
+  .toast[data-kind='ok']::before { content: '\2713\00a0'; }
+
+  .encoded { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 0.75rem; }
+  .encoded[hidden] { display: none; }
+  .encoded summary { cursor: pointer; font-size: 0.875rem; font-weight: 600; color: var(--accent); }
+  .encoded-note { margin-top: 0.5rem; font-size: 0.8125rem; color: var(--muted); }
+  .encoded pre {
+    margin: 0.5rem 0 0;
+    padding: 0.6rem 0.8rem;
+    overflow-x: auto;
+    background: var(--surface-inset);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  /* ---- Notes ---- */
+  .notes { display: grid; gap: 1.25rem; padding-top: 0.5rem; }
+  @media (min-width: 700px) { .notes { grid-template-columns: 1fr 1fr; gap: 2.5rem; } }
+  .notes h2 { font-size: 1.125rem; }
+  .notes p { margin-top: 0.5rem; color: var(--ink-2); font-size: 0.9375rem; max-width: 34rem; }
+
+  @media (max-width: 639px), (pointer: coarse) {
+    .wq :global(.btn) { height: 44px; padding-inline: 1.1rem; }
+    .pw .btn { height: auto; }
+    .seg span { padding-block: 0.65rem; }
+  }
+  @media (max-width: 479px) {
+    .actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .actions :global(.btn-primary) { grid-column: 1 / -1; }
+    .seg span { padding-inline: 0.7rem; font-size: 0.8125rem; }
+  }
+</style>
+
+<!-- Print: the Print button builds a dedicated sheet (see src/scripts/wifiQr.js). While printing, every other part of the
+     page is removed from layout, so exactly one page prints, in black on white. The password is never in the sheet. -->
+<style is:global>
+  .wq-print-sheet { display: none; }
+  @media print {
+    html.wq-printing, html.wq-printing body { background: #ffffff !important; }
+    html.wq-printing body > *:not(.wq-print-sheet) { display: none !important; }
+    html.wq-printing .wq-print-sheet {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 95vh;
+      padding: 1.5cm;
+      color: #000000;
+      background: #ffffff;
+      text-align: center;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+    .wq-print-sheet .ps-lead { margin: 0 0 0.8cm; font-size: 18pt; font-weight: 600; line-height: 1.3; }
+    .wq-print-sheet .ps-qr { width: 11cm; height: 11cm; }
+    .wq-print-sheet .ps-qr svg { display: block; width: 100%; height: 100%; }
+    .wq-print-sheet .ps-name { margin: 0.8cm 0 0; font-size: 22pt; font-weight: 600; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .wq-print-sheet .ps-sub { margin: 0.2cm 0 0; font-size: 12pt; color: #333333; }
+  }
+</style>

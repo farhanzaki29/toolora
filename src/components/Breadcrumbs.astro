@@ -1,0 +1,32 @@
+---
+/** items: [{ label, href? }] — the last item is the current page (no href). Home is added automatically. */
+import { breadcrumbLd, jsonLdString } from '../lib/seo.js';
+
+const { items = [] } = Astro.props;
+const all = [{ label: 'Home', href: '/' }, ...items];
+const ld = breadcrumbLd(Astro.site, items); // null until the production URL is configured
+---
+
+{ld && <script type="application/ld+json" set:html={jsonLdString(ld)} />}
+<nav class="crumbs" aria-label="Breadcrumb">
+  <ol>
+    {all.map((item, i) => (
+      <li>
+        {item.href && i < all.length - 1 ? (
+          <a href={item.href}>{item.label}</a>
+        ) : (
+          <span aria-current="page">{item.label}</span>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .crumbs ol { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; font-size: 0.875rem; }
+  .crumbs li { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--muted); }
+  .crumbs li + li::before { content: '/'; color: var(--line-strong); }
+  .crumbs a { color: var(--accent); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color var(--fast) var(--ease); }
+  .crumbs a:hover { text-decoration-color: currentColor; }
+  .crumbs [aria-current='page'] { color: var(--ink-2); font-weight: 550; }
+</style>

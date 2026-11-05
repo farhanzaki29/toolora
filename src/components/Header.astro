@@ -4,6 +4,11 @@ import Icon from './Icon.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import { site } from '../config/site.js';
 import { liveTools, toolHref } from '../data/tools.js';
+
+// Active state: exact match for Home, section match (e.g. /tools/json-formatter) for the rest.
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isActive = (href) => (href === '/' ? path === '/' : path === href || path.startsWith(href + '/'));
+const current = (href) => (isActive(href) ? 'page' : undefined);
 ---
 
 <header class="header">
@@ -13,14 +18,14 @@ import { liveTools, toolHref } from '../data/tools.js';
     <nav class="desktop" aria-label="Primary">
       <ul>
         {site.nav.map((item) => (
-          <li><a href={item.href}>{item.label}</a></li>
+          <li><a href={item.href} aria-current={current(item.href)}>{item.label}</a></li>
         ))}
       </ul>
     </nav>
 
     <div class="actions">
       <ThemeToggle />
-      <a class="btn btn-primary btn-sm cta" href="/#tools">Browse tools</a>
+      <a class="btn btn-primary btn-sm cta" href={site.links.tools}>Browse tools</a>
       <button
         class="toggle"
         type="button"
@@ -39,14 +44,14 @@ import { liveTools, toolHref } from '../data/tools.js';
     <nav class="container" aria-label="Mobile">
       <ul>
         {site.nav.map((item) => (
-          <li><a href={item.href}>{item.label}</a></li>
+          <li><a href={item.href} aria-current={current(item.href)}>{item.label}</a></li>
         ))}
       </ul>
       <p class="group-label">Tools</p>
       <ul class="tool-list">
         {liveTools.map((tool) => (
           <li>
-            <a href={toolHref(tool)}>
+            <a href={toolHref(tool)} data-tone={tool.tone} aria-current={current(toolHref(tool))}>
               <Icon name={tool.icon} size={18} />
               {tool.name}
             </a>
@@ -87,7 +92,7 @@ import { liveTools, toolHref } from '../data/tools.js';
     position: sticky;
     top: 0;
     z-index: 50;
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
     backdrop-filter: saturate(1.4) blur(12px);
     -webkit-backdrop-filter: saturate(1.4) blur(12px);
     border-bottom: 1px solid var(--line);
@@ -110,7 +115,17 @@ import { liveTools, toolHref } from '../data/tools.js';
     font-weight: 500;
     transition: color var(--fast) var(--ease), background var(--fast) var(--ease);
   }
-  .desktop a:hover { color: var(--ink); background: var(--surface-sunken); }
+  .desktop a { position: relative; }
+  .desktop a:hover { color: var(--accent); background: var(--accent-tint); }
+  .desktop a[aria-current='page'] { color: var(--ink); font-weight: 600; }
+  .desktop a[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    left: 0.8rem; right: 0.8rem; bottom: 0.1rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--clay);
+  }
 
   .actions { display: flex; align-items: center; gap: 0.5rem; }
   .cta { display: none; }
@@ -123,8 +138,10 @@ import { liveTools, toolHref } from '../data/tools.js';
     border: 1px solid var(--line-strong);
     border-radius: var(--radius);
     background: var(--surface);
+    color: var(--ink);
     cursor: pointer;
   }
+  .toggle:hover { border-color: var(--accent); color: var(--accent); }
   .toggle .close { display: none; }
   .toggle[aria-expanded='true'] .open { display: none; }
   .toggle[aria-expanded='true'] .close { display: block; }
@@ -149,14 +166,16 @@ import { liveTools, toolHref } from '../data/tools.js';
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid var(--line);
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
+    font-weight: 650;
     font-size: 0.75rem;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
   }
+  .mobile a[aria-current='page'] { color: var(--ink); font-weight: 650; box-shadow: inset 3px 0 0 var(--clay); padding-left: 0.75rem; }
   .tool-list a { color: var(--ink-2); font-weight: 450; }
-  .tool-list :global(svg) { color: var(--accent); }
+  .tool-list :global(svg) { color: var(--tone, var(--accent)); }
 
   @media (min-width: 800px) {
     .desktop { display: block; }

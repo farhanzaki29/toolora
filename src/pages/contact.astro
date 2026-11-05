@@ -1,0 +1,135 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import { site } from '../config/site.js';
+---
+
+<PageLayout title={`Contact ${site.name}: questions and tool suggestions`} description={`Send ${site.name} a question, a suggestion for a new tool or feedback. The contact form is a placeholder for now and does not send messages yet.`}>
+  <PageHero
+    eyebrow="Contact"
+    title="Get in touch"
+    intro="Have a question, a suggestion for a new tool, or feedback? Write to us using the form below."
+    crumbs={[{ label: 'Contact' }]}
+  />
+
+  <section class="section">
+    <div class="container layout">
+      <form class="form" novalidate data-contact-form aria-describedby="form-note">
+        <p id="form-note" class="notice">
+          <strong>Frontend placeholder.</strong> This form is not connected to anything yet, so your message will not be sent or delivered.
+          A submission method will be added later.
+        </p>
+
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" name="name" type="text" autocomplete="name" required aria-describedby="name-err" />
+          <p class="err" id="name-err" hidden></p>
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-err" />
+          <p class="err" id="email-err" hidden></p>
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="6" required minlength="10" aria-describedby="message-err"></textarea>
+          <p class="err" id="message-err" hidden></p>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Check message</button>
+        <p class="status" role="status" aria-live="polite" data-status></p>
+      </form>
+
+      <aside class="side">
+        <h2>Before you write</h2>
+        <p>Many common questions are answered on the <a class="link" href="/help">Help / FAQ</a> page.</p>
+        <p>Looking for a tool? <a class="link" href="/tools">Browse all tools</a>.</p>
+      </aside>
+    </div>
+  </section>
+</PageLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]')!;
+  const status = form.querySelector<HTMLElement>('[data-status]')!;
+
+  const rules: Record<string, (v: string) => string> = {
+    name: (v) => (v.trim() ? '' : 'Please enter your name.'),
+    email: (v) =>
+      !v.trim() ? 'Please enter your email address.'
+      : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? '' : 'Please enter a valid email address, e.g. name@example.com.',
+    message: (v) =>
+      !v.trim() ? 'Please enter a message.'
+      : v.trim().length < 10 ? 'Please write at least 10 characters.' : '',
+  };
+
+  const check = (field: HTMLInputElement | HTMLTextAreaElement) => {
+    const msg = rules[field.name]?.(field.value) ?? '';
+    const err = document.getElementById(`${field.id}-err`)!;
+    err.textContent = msg;
+    err.hidden = !msg;
+    field.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    return !msg;
+  };
+
+  const fields = Array.from(form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea'));
+  fields.forEach((f) => {
+    f.addEventListener('blur', () => check(f));
+    f.addEventListener('input', () => f.getAttribute('aria-invalid') === 'true' && check(f));
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    status.textContent = '';
+    status.className = 'status';
+    const results = fields.map(check);
+    if (results.every(Boolean)) {
+      status.textContent = 'Thanks. Your details look valid, but no message was sent because this form is only a placeholder for now.';
+      status.classList.add('ok');
+    } else {
+      fields.find((f) => f.getAttribute('aria-invalid') === 'true')?.focus();
+      status.textContent = 'Please fix the highlighted fields.';
+      status.classList.add('bad');
+    }
+  });
+</script>
+
+<style>
+  .layout { display: grid; gap: 3rem; }
+  @media (min-width: 900px) { .layout { grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr); gap: 4rem; align-items: start; } }
+
+  .form {
+    display: grid;
+    gap: 1.25rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .field { display: grid; gap: 0.4rem; }
+  label { font-weight: 600; font-size: 0.9375rem; color: var(--ink); }
+  input, textarea {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+  }
+  textarea { resize: vertical; min-height: 9rem; }
+  input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-tint); }
+  input[aria-invalid='true'], textarea[aria-invalid='true'] { border-color: var(--clay); }
+  .err { font-size: 0.875rem; color: var(--clay-text); font-weight: 550; }
+  .err[hidden] { display: none; }
+  .form .btn { justify-self: start; }
+  .status { font-size: 0.9375rem; min-height: 1.4em; }
+  .status.ok { color: var(--success); }
+  .status.bad { color: var(--clay-text); }
+
+  .side h2 { font-size: 1.375rem; }
+  .side p { margin-top: 0.75rem; color: var(--ink-2); }
+</style>

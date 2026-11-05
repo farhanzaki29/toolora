@@ -1,0 +1,203 @@
+---
+/**
+ * Reusable template for an individual tool page. Reads everything from src/data/tools.js.
+ * The `workspace` slot is where the real tool interface will be mounted later.
+ */
+import PageHero from './PageHero.astro';
+import ToolCard from './ToolCard.astro';
+import Icon from './Icon.astro';
+import { relatedTools } from '../data/tools.js';
+
+// `Workspace` (optional): the tool's interface component. Tools without one show the placeholder.
+const { tool, Workspace } = Astro.props;
+const related = relatedTools(tool, 3);
+---
+
+<PageHero
+  eyebrow={tool.category}
+  title={tool.name}
+  intro={tool.description}
+  crumbs={[{ label: 'Tools', href: '/tools' }, { label: tool.name }]}
+/>
+
+<div class="container wrap" data-tone={tool.tone}>
+  <section class="section workspace-section" aria-labelledby="workspace-title">
+    <h2 id="workspace-title" class="sr-only">{tool.name} workspace</h2>
+    {Workspace ? (
+      <Workspace tool={tool} />
+    ) : (
+      <div class="workspace">
+        <span class="ws-icon"><Icon name={tool.icon} size={28} /></span>
+        <p class="ws-title">{tool.name} interface goes here</p>
+        <p class="ws-text">
+          This page is a structural placeholder. The working tool has not been built yet, so nothing can be uploaded or processed here.
+        </p>
+        <span class="ws-badge">Coming soon</span>
+      </div>
+    )}
+  </section>
+
+  <section class="about" aria-labelledby="about-title">
+    <div>
+      <p class="eyebrow">About this tool</p>
+      <h2 id="about-title">{Workspace ? 'What it does' : 'What it will do'}</h2>
+      <p class="summary">{tool.summary}</p>
+      {tool.audience && <p class="audience">{tool.audience}</p>}
+    </div>
+    <div>
+      <p class="eyebrow">Main benefits</p>
+      <ul class="benefits">
+        {tool.benefits.map((b) => (
+          <li><Icon name="check" size={18} /><span>{b}</span></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {Workspace && tool.howTo && (
+    <section class="guide" aria-labelledby="howto-title">
+      <div>
+        <p class="eyebrow">How to use</p>
+        <h2 id="howto-title">How to use the {tool.name}</h2>
+        <ol class="steps">
+          {tool.howTo.map((s) => <li>{s}</li>)}
+        </ol>
+      </div>
+      <div class="good">
+        <h2 id="limits-title">Good to know</h2>
+        <ul class="notes" aria-labelledby="limits-title">
+          {tool.limits.map((l) => <li>{l}</li>)}
+        </ul>
+        <h2 id="privacy-title" class="h-sub">Your privacy</h2>
+        <p class="privacy-text">
+          {tool.privacy} <a class="link" href="/privacy">Read the Privacy Policy</a>.
+        </p>
+      </div>
+    </section>
+  )}
+
+  {Workspace && tool.faq?.length > 0 && (
+    <section class="faq" aria-labelledby="faq-title">
+      <h2 id="faq-title">Frequently asked questions</h2>
+      <div class="faq-list">
+        {tool.faq.map((f) => (
+          <details>
+            <summary><span>{f.q}</span><Icon name="plus" size={20} class="chev" /></summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="related" aria-labelledby="related-title">
+    <div class="related-head">
+      <h2 id="related-title">Related tools</h2>
+      <a class="link" href="/tools">
+        <Icon name="arrow" size={16} class="back" /> Back to all tools
+      </a>
+    </div>
+    <ul class="grid">
+      {related.map((t, i) => <ToolCard tool={t} index={i} />)}
+    </ul>
+  </section>
+</div>
+
+<style>
+  .workspace-section { padding-block: clamp(2rem, 4vw, 3rem) clamp(2rem, 4vw, 3rem); }
+  .workspace {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 20rem;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    background: var(--surface);
+    border: 1.5px dashed var(--line-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .ws-icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius);
+    background: var(--surface-sunken);
+    border: 1px solid var(--line);
+    color: var(--tone);
+  }
+  .ws-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 600; color: var(--ink); margin-top: 0.4rem; }
+  .ws-text { max-width: 30rem; color: var(--muted); font-size: 0.9375rem; }
+  .ws-badge {
+    margin-top: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 650;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--clay-text);
+    border: 1px solid color-mix(in srgb, var(--clay) 45%, transparent);
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+  }
+
+  .about {
+    display: grid;
+    gap: 2.5rem;
+    padding-block: clamp(2rem, 5vw, 3.5rem);
+    border-top: 1px solid var(--line);
+  }
+  @media (min-width: 800px) { .about { grid-template-columns: 1.2fr 1fr; gap: 4rem; } }
+  .about h2 { margin-top: 0.75rem; font-size: clamp(1.5rem, 3vw, 2rem); }
+  .summary { margin-top: 1rem; color: var(--ink-2); font-size: 1.0625rem; max-width: 34rem; }
+  .benefits { display: grid; gap: 0.85rem; margin-top: 1rem; }
+  .benefits li { display: flex; gap: 0.7rem; align-items: flex-start; color: var(--ink-2); }
+  .benefits :global(svg) { flex: none; margin-top: 0.2rem; color: var(--accent); }
+
+  .audience { margin-top: 0.75rem; color: var(--muted); max-width: 34rem; }
+
+  .guide { display: grid; gap: 2.5rem; padding-block: clamp(2rem, 5vw, 3.5rem); border-top: 1px solid var(--line); }
+  @media (min-width: 800px) { .guide { grid-template-columns: 1.2fr 1fr; gap: 4rem; } }
+  .guide h2 { margin-top: 0.75rem; font-size: clamp(1.4rem, 2.6vw, 1.75rem); }
+  .guide .good h2:first-child { margin-top: 0; }
+  .guide .h-sub { margin-top: 2rem; }
+  .steps { margin: 1rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.85rem; counter-reset: step; }
+  .steps li { position: relative; padding-left: 2.4rem; color: var(--ink-2); counter-increment: step; }
+  .steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 0.05rem;
+    display: grid; place-items: center; width: 1.7rem; height: 1.7rem;
+    border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface);
+    font-size: 0.8125rem; font-weight: 650; color: var(--accent);
+  }
+  .notes { margin: 1rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.75rem; }
+  .notes li { position: relative; padding-left: 1.1rem; color: var(--ink-2); }
+  .notes li::before { content: ''; position: absolute; left: 0; top: 0.65em; width: 6px; height: 6px; border-radius: 50%; background: var(--clay); }
+  .privacy-text { margin-top: 0.75rem; color: var(--ink-2); max-width: 34rem; }
+
+  .faq { padding-block: clamp(2rem, 5vw, 3.5rem); border-top: 1px solid var(--line); }
+  .faq h2 { font-size: clamp(1.4rem, 2.6vw, 1.75rem); margin-bottom: 1.25rem; }
+  .faq-list { border-top: 1px solid var(--line-strong); max-width: 46rem; }
+  .faq details { border-bottom: 1px solid var(--line-strong); }
+  .faq summary {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    min-height: 44px; padding: 1rem 0.25rem; cursor: pointer; list-style: none;
+    font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; color: var(--ink);
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary:hover { color: var(--accent); }
+  .faq summary :global(.chev) { flex: none; color: var(--clay-text); transition: transform var(--med) var(--ease); }
+  .faq details[open] summary :global(.chev) { transform: rotate(45deg); }
+  .faq details p { padding: 0 0.25rem 1.25rem; max-width: 40rem; color: var(--ink-2); }
+
+  .related { padding-block: clamp(2rem, 5vw, 3.5rem) var(--section-y); border-top: 1px solid var(--line); }
+  .related-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.75rem 1.5rem; margin-bottom: 1.5rem; }
+  .related-head h2 { font-size: clamp(1.4rem, 2.6vw, 1.75rem); }
+  .related-head .link { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 550; font-size: 0.9375rem; }
+  .related-head :global(svg.back) { transform: rotate(180deg); }
+  .grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 960px) { .grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; } }
+</style>

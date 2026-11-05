@@ -4,11 +4,9 @@ import { site } from '../config/site.js';
 import { liveTools, toolHref } from '../data/tools.js';
 
 const year = new Date().getFullYear();
-const company = [
-  { label: 'About', href: site.links.about },
-  { label: 'Contact', href: site.links.contact },
-  { label: 'Privacy Policy', href: site.links.privacy },
-  { label: 'Terms of Use', href: site.links.terms },
+const groups = [
+  { title: 'Tools', label: 'Tools', links: liveTools.map((t) => ({ label: t.name, href: toolHref(t) })) },
+  ...site.footer.map((g) => ({ ...g, label: g.title })),
 ];
 ---
 
@@ -19,19 +17,14 @@ const company = [
       <p>{site.description}</p>
     </div>
 
-    <nav aria-label="Tools">
-      <h2>Tools</h2>
-      <ul>
-        {liveTools.map((t) => <li><a href={toolHref(t)}>{t.name}</a></li>)}
-      </ul>
-    </nav>
-
-    <nav aria-label="Company and legal">
-      <h2>Company</h2>
-      <ul>
-        {company.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
-      </ul>
-    </nav>
+    {groups.map((g) => (
+      <nav aria-label={g.label}>
+        <h2>{g.title}</h2>
+        <ul>
+          {g.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+        </ul>
+      </nav>
+    ))}
   </div>
 
   <div class="container bottom">
@@ -41,8 +34,8 @@ const company = [
 
 <style>
   .footer {
-    background: var(--surface);
-    border-top: 1px solid var(--line);
+    background: var(--bg-alt);
+    border-top: 1px solid var(--line-strong);
     padding-top: clamp(3rem, 6vw, 4.5rem);
   }
   .top {
@@ -55,12 +48,12 @@ const company = [
   .about p { margin-top: 1rem; color: var(--muted); font-size: 0.9375rem; }
 
   h2 {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 0.75rem;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    font-weight: 500;
-    color: var(--muted);
+    font-weight: 650;
+    color: var(--clay-text);
     margin-bottom: 1rem;
   }
   ul { display: grid; gap: 0.6rem; }
@@ -79,7 +72,11 @@ const company = [
   }
 
   @media (min-width: 800px) {
-    .top { grid-template-columns: 1.6fr 1fr 1fr; }
+    .top { grid-template-columns: repeat(4, 1fr); }
+    .about { grid-column: 1 / -1; max-width: 26rem; }
+  }
+  @media (min-width: 1000px) {
+    .top { grid-template-columns: 1.5fr 1.2fr 0.9fr 0.9fr 1fr; }
     .about { grid-column: auto; }
   }
 </style>

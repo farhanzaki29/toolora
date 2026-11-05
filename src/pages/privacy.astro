@@ -1,0 +1,63 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import { site } from '../config/site.js';
+---
+
+<PageLayout
+  title="Privacy Policy"
+  description={`How ${site.name} handles your data: the tools run in your browser, nothing you enter is uploaded, and the only thing saved is your theme choice.`}
+>
+  <PageHero
+    eyebrow="Legal"
+    title="Privacy Policy"
+    intro="A plain-language description of what this website does with your information."
+    crumbs={[{ label: 'Privacy Policy' }]}
+  />
+  <section class="section">
+    <div class="container">
+      <div class="prose">
+        <p class="notice">
+          <strong>Draft.</strong> This page describes how the website works today. It has not been reviewed by a legal professional,
+          and the operator’s contact and hosting details will be added before launch.
+        </p>
+
+        <h2>The short version</h2>
+        <ul>
+          <li>The tools process your files and text in your own browser. {site.name} does not receive them.</li>
+          <li>There are no accounts, no advertising and no analytics or tracking scripts on this site.</li>
+          <li>The only thing saved on your device is your light or dark theme choice.</li>
+        </ul>
+
+        <h2>What you enter into the tools</h2>
+        <p>
+          Images you add to the Image Compressor and Image Resizer, text in the Word Counter, JSON in the JSON Formatter, and the details you enter in
+          the WiFi QR Generator and QR Code Generator (including WiFi passwords, email addresses, phone numbers and contact details) are processed by
+          your browser on your device. They are not sent to {site.name} or to any third party, are not added to the page address, and are not kept
+          after you close or reload the page. Files you download are created on your device.
+        </p>
+
+        <h2>What is stored on your device</h2>
+        <p>
+          If you switch between the light and dark theme, your choice is saved in your browser’s local storage under the name <code>theme</code>
+          so the site can remember it. It contains only the word “light” or “dark”. The site does not set cookies.
+        </p>
+
+        <h2>Information your browser sends when you visit</h2>
+        <p>
+          Like any website, loading a page means your browser requests it from the web server that hosts the site, and that server receives normal
+          technical details such as your IP address and the page requested. The hosting provider has not been named here yet; this page will be updated
+          to say who it is and how long such logs are kept. {site.name} does not add its own analytics on top of this.
+        </p>
+
+        <h2>The contact form</h2>
+        <p>
+          The form on the <a href="/contact">Contact</a> page is currently a placeholder. It checks what you type but does not send it anywhere.
+        </p>
+
+        <h2>Questions</h2>
+        <p>See the <a href="/help">Help / FAQ</a> page or <a href="/contact">contact us</a>.</p>
+      </div>
+    </div>
+  </section>
+</PageLayout>

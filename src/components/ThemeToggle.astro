@@ -22,17 +22,63 @@ import Icon from './Icon.astro';
     btn.setAttribute('title', dark ? 'Switch to light theme' : 'Switch to dark theme');
   };
 
-  const apply = (theme: 'light' | 'dark') => {
-    // Briefly disable transitions so every surface flips in the same frame.
-    root.classList.add('theme-switching');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Tracks the most recent requested theme so rapid clicks never read a stale value.
+  let target: 'light' | 'dark' = current();
+  const DURATION = 560;
+  const EASING = 'cubic-bezier(0.65, 0, 0.2, 1)';
+
+  const setTheme = (theme: 'light' | 'dark') => {
     root.dataset.theme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#111316' : '#fafaf7');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#181b18' : '#f3f0e8');
     syncButton();
-    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
+  };
+
+  const apply = (theme: 'light' | 'dark') => {
+    target = theme;
+    // Update the toggle's own state immediately so it stays responsive.
+    btn?.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+    btn?.setAttribute('title', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+
+    if (reduceMotion.matches) {
+      setTheme(theme);
+      return;
+    }
+
+    type VT = { ready: Promise<void>; finished: Promise<void> };
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => VT };
+    if (typeof doc.startViewTransition !== 'function' || !btn) {
+      setTheme(theme); // Unsupported browser: instant switch.
+      return;
+    }
+
+    // Origin = centre of the toggle button; radius reaches the farthest viewport corner.
+    const rect = btn.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+
+    try {
+      // The callback applies the latest target, so overlapping transitions settle correctly.
+      const vt = doc.startViewTransition(() => setTheme(target));
+      vt.ready
+        .then(() => {
+          root.animate(
+            { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+            { duration: DURATION, easing: EASING, pseudoElement: '::view-transition-new(root)' }
+          );
+        })
+        .catch(() => {
+          // Transition skipped (e.g. a newer click superseded it): the theme is already applied.
+        });
+      vt.finished.catch(() => {});
+    } catch {
+      setTheme(theme);
+    }
   };
 
   btn?.addEventListener('click', () => {
-    const next = current() === 'dark' ? 'light' : 'dark';
+    const next = target === 'dark' ? 'light' : 'dark';
     apply(next);
     try { localStorage.setItem(KEY, next); } catch {}
   });
@@ -49,10 +95,22 @@ import Icon from './Icon.astro';
 </script>
 
 <style>
-  .theme-toggle { position: relative; }
-  .sun, .moon { display: grid; place-items: center; }
+  .theme-toggle { position: relative; overflow: hidden; }
+  /* Both icons are stacked; only opacity/transform animate (compositor-friendly). */
+  .sun, .moon {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transition: opacity 320ms var(--ease), transform 420ms var(--ease);
+  }
   /* Show the icon for the theme you'll switch TO: moon in light mode, sun in dark mode. */
-  .sun { display: none; }
-  :global(:root[data-theme='dark']) .sun { display: grid; }
-  :global(:root[data-theme='dark']) .moon { display: none; }
+  .sun { opacity: 0; transform: rotate(-70deg) scale(0.7); }
+  .moon { opacity: 1; transform: none; }
+  :global(:root[data-theme='dark']) .sun { opacity: 1; transform: none; }
+  :global(:root[data-theme='dark']) .moon { opacity: 0; transform: rotate(70deg) scale(0.7); }
+  @media (prefers-reduced-motion: reduce) {
+    .sun, .moon { transition: none; }
+  }
 </style>
+

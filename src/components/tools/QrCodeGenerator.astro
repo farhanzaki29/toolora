@@ -1,0 +1,287 @@
+---
+/**
+ * General QR Code Generator workspace. Markup + styles only; behaviour lives in src/scripts/qrCode.js,
+ * payloads/validation in src/lib/qrPayload.js, QR drawing in src/lib/qr.js and exports in src/lib/qrExport.js.
+ */
+import { QR_TYPES, QR_SIZES, DEFAULT_SIZE, RECOMMENDED_COLORS, MAX_PAYLOAD_BYTES } from '../../lib/qrPayload.js';
+
+// kind: line (single-line input) | area (multi-line). Field names match src/lib/qrPayload.js buildQr().
+const panels = {
+  url: { title: 'Website address', fields: [{ name: 'url', label: 'Website address', kind: 'line', mode: 'url', placeholder: 'example.com', help: 'You can leave out https://. It is added for you.', required: true }] },
+  text: { title: 'Text', fields: [{ name: 'text', label: 'Text', kind: 'area', rows: 6, required: true }] },
+  email: {
+    title: 'Email',
+    fields: [
+      { name: 'address', label: 'Email address', kind: 'line', mode: 'email', placeholder: 'name@example.com', required: true },
+      { name: 'subject', label: 'Subject (optional)', kind: 'line' },
+      { name: 'message', label: 'Message (optional)', kind: 'area', rows: 4 },
+    ],
+  },
+  phone: { title: 'Phone number', fields: [{ name: 'phone', label: 'Phone number', kind: 'line', mode: 'tel', placeholder: '+44 20 7946 0958', help: 'Any country. Include the + and country code if people will scan from abroad.', required: true }] },
+  sms: {
+    title: 'SMS',
+    fields: [
+      { name: 'phone', label: 'Phone number', kind: 'line', mode: 'tel', placeholder: '+1 555 123 4567', required: true },
+      { name: 'message', label: 'Message (optional)', kind: 'area', rows: 4 },
+    ],
+  },
+  contact: {
+    title: 'Contact card',
+    fields: [
+      { name: 'firstName', label: 'First name', kind: 'line', required: true, half: true },
+      { name: 'lastName', label: 'Last name (optional)', kind: 'line', half: true },
+      { name: 'phone', label: 'Phone (optional)', kind: 'line', mode: 'tel', half: true },
+      { name: 'email', label: 'Email (optional)', kind: 'line', mode: 'email', half: true },
+      { name: 'organization', label: 'Organization (optional)', kind: 'line', half: true },
+      { name: 'website', label: 'Website (optional)', kind: 'line', mode: 'url', half: true },
+    ],
+  },
+};
+const plainLabel = (l) => l.replace(/ \(optional\)$/, '');
+---
+
+<div class="qg" data-qg>
+  <div class="layout">
+    <!-- ================= Form ================= -->
+    <form class="card form" data-qg-form novalidate autocomplete="off" aria-labelledby="qg-form-title">
+      <h2 id="qg-form-title" class="card-title">Create your QR code</h2>
+
+      <fieldset class="field">
+        <legend>What should it contain?</legend>
+        <div class="segmented types" role="radiogroup">
+          {QR_TYPES.map((t) => (
+            <label class="seg">
+              <input type="radio" name="qg-type" value={t.id} checked={t.id === 'url'} />
+              <span>{t.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      {Object.entries(panels).map(([type, panel]) => (
+        <div class="panel" data-qg-panel={type} hidden={type !== 'url'} role="group" aria-label={panel.title}>
+          <div class:list={['fields', { two: type === 'contact' }]}>
+            {panel.fields.map((f) => (
+              <div class="field">
+                <label for={`qg-${type}-${f.name}`}>{f.label}{f.required ? <span class="req" aria-hidden="true"> *</span> : null}</label>
+                {f.kind === 'area' ? (
+                  <textarea
+                    id={`qg-${type}-${f.name}`} class="input" rows={f.rows ?? 4} autocomplete="off" spellcheck="false"
+                    aria-required={f.required ? 'true' : undefined} aria-describedby={`qg-${type}-${f.name}-msg`}
+                    data-qg-field={f.name} data-qg-label={plainLabel(f.label)}></textarea>
+                ) : (
+                  <input
+                    id={`qg-${type}-${f.name}`} class="input" type="text" inputmode={f.mode} autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+                    placeholder={f.placeholder} aria-required={f.required ? 'true' : undefined}
+                    aria-describedby={f.help ? `qg-${type}-${f.name}-help qg-${type}-${f.name}-msg` : `qg-${type}-${f.name}-msg`}
+                    data-qg-field={f.name} data-qg-label={plainLabel(f.label)} />
+                )}
+                {f.help ? <p class="help" id={`qg-${type}-${f.name}-help`}>{f.help}</p> : null}
+                {type === 'text' ? <p class="help counter" aria-live="off" data-qg-counter>{`0 of ${MAX_PAYLOAD_BYTES.toLocaleString('en-US')} bytes`}</p> : null}
+                <p class="msg" id={`qg-${type}-${f.name}-msg`} role="alert" data-qg-msg={f.name} hidden></p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <fieldset class="group">
+        <legend>Appearance</legend>
+        <div class="colors">
+          <div class="color-field">
+            <label for="qg-fg">Code colour</label>
+            <div class="color-row">
+              <input id="qg-fg" class="color" type="color" value={RECOMMENDED_COLORS.fg} aria-describedby="qg-color-msg" data-qg-fg />
+              <output class="color-out" for="qg-fg" data-qg-fg-out>{RECOMMENDED_COLORS.fg.toUpperCase()}</output>
+            </div>
+          </div>
+          <div class="color-field">
+            <label for="qg-bg">Background colour</label>
+            <div class="color-row">
+              <input id="qg-bg" class="color" type="color" value={RECOMMENDED_COLORS.bg} aria-describedby="qg-color-msg" data-qg-bg />
+              <output class="color-out" for="qg-bg" data-qg-bg-out>{RECOMMENDED_COLORS.bg.toUpperCase()}</output>
+            </div>
+          </div>
+        </div>
+        <ul class="msgs" id="qg-color-msg" aria-live="polite" data-qg-color-msg hidden></ul>
+        <div class="color-actions">
+          <button class="btn btn-secondary btn-sm" type="button" data-qg-recommended hidden>Use recommended colours</button>
+          <button class="btn btn-secondary btn-sm" type="button" data-qg-reset-colors disabled>Reset colours</button>
+        </div>
+        <p class="help">Dark code on a light background scans best. Keep a strong contrast.</p>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend>Download size</legend>
+        <div class="segmented" role="radiogroup">
+          {QR_SIZES.map((s) => (
+            <label class="seg">
+              <input type="radio" name="qg-size" value={String(s)} checked={s === DEFAULT_SIZE} />
+              <span>{s} px</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <button class="btn btn-secondary btn-sm" type="button" data-qg-clear disabled>Clear all</button>
+        <p class="privacy">Your QR code is generated directly in your browser. Your information is not uploaded to our servers.</p>
+      </div>
+    </form>
+
+    <!-- ================= Preview ================= -->
+    <section class="card preview" aria-labelledby="qg-prev-title">
+      <h2 id="qg-prev-title" class="card-title">QR code</h2>
+
+      <div class="stage" data-qg-stage data-state="empty">
+        <div class="empty" data-qg-empty>
+          <p class="empty-title" data-qg-empty-title>Your QR code appears here</p>
+          <p class="empty-text" data-qg-empty-text>Enter the details and the code is created instantly, right on this page.</p>
+          <ul class="empty-list" data-qg-empty-list hidden></ul>
+        </div>
+        <div class="qr" data-qg-qr hidden></div>
+      </div>
+
+      <div class="cap" data-qg-caption-wrap hidden>
+        <p class="cap-name" data-qg-caption></p>
+        <p class="cap-sub" data-qg-caption-sub></p>
+      </div>
+      <ul class="msgs notes" aria-live="polite" data-qg-notes hidden></ul>
+
+      <div class="actions">
+        <button class="btn btn-primary btn-sm" type="button" data-qg-png disabled>Download PNG</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-qg-svg disabled>Download SVG</button>
+        <button class="btn btn-secondary btn-sm" type="button" data-qg-copy disabled>Copy QR text</button>
+      </div>
+      <p class="toast" role="status" aria-live="polite" data-qg-toast></p>
+      <p class="sr-only" role="status" aria-live="polite" data-qg-live></p>
+
+      <details class="encoded" data-qg-encoded-wrap hidden>
+        <summary>Show the encoded text</summary>
+        <p class="encoded-note">This is exactly what the QR code contains.</p>
+        <pre><code data-qg-encoded></code></pre>
+      </details>
+    </section>
+  </div>
+</div>
+
+<script>
+  import '../../scripts/qrCode.js';
+</script>
+
+<style>
+  .qg { display: grid; gap: 1.5rem; }
+  .layout { display: grid; gap: 1.25rem; align-items: start; }
+  @media (min-width: 900px) {
+    .layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 1.5rem; }
+    .preview { position: sticky; top: calc(var(--header-h) + 1rem); }
+  }
+
+  .card { padding: clamp(1rem, 2.5vw, 1.5rem); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); min-width: 0; }
+  .card-title { font-size: 1.1875rem; margin-bottom: 1.1rem; }
+  fieldset, legend { margin: 0; padding: 0; border: 0; }
+  fieldset { min-width: 0; }
+
+  /* ---- Form ---- */
+  .form { display: grid; gap: 1.1rem; }
+  .form .card-title { margin-bottom: 0; }
+  .field { display: grid; gap: 0.4rem; min-width: 0; align-content: start; }
+  .group { display: grid; gap: 0.7rem; min-width: 0; padding-top: 0.9rem; border-top: 1px solid var(--line); }
+  label, legend { font-weight: 600; font-size: 0.9375rem; color: var(--ink); }
+  legend { margin-bottom: 0.4rem; }
+  .group legend { margin-bottom: 0; }
+  .req { color: var(--clay-text); }
+  .panel { display: grid; gap: 1rem; }
+  .panel[hidden] { display: none; }
+  .fields { display: grid; gap: 1rem; }
+  @media (min-width: 560px) { .fields.two { grid-template-columns: 1fr 1fr; } }
+  .input {
+    width: 100%; min-width: 0; padding: 0.7rem 0.85rem; background: var(--surface-inset); border: 1px solid var(--line-strong);
+    border-radius: var(--radius); font-size: 1rem; color: var(--ink); font-family: inherit;
+    transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+  }
+  textarea.input { resize: vertical; line-height: 1.5; }
+  .input:focus, .input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-tint); }
+  .input[aria-invalid='true'] { border-color: var(--clay); }
+  .help { font-size: 0.8125rem; color: var(--muted); }
+  .counter[data-over='true'] { color: var(--clay-text); font-weight: 600; }
+  .msg { margin: 0; font-size: 0.875rem; font-weight: 600; color: var(--clay-text); }
+  .msg[hidden] { display: none; }
+
+  .msgs { display: grid; gap: 0.3rem; margin: 0; padding: 0; list-style: none; font-size: 0.875rem; color: var(--ink-2); }
+  .msgs[hidden] { display: none; }
+  .msgs li { padding-left: 0.9rem; position: relative; }
+  .msgs li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--clay); }
+  .msgs li.is-error { color: var(--clay-text); font-weight: 600; }
+
+  .segmented { display: inline-flex; flex-wrap: wrap; padding: 3px; gap: 2px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--radius); max-width: 100%; }
+  .seg { position: relative; cursor: pointer; }
+  .seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .seg span { display: block; padding: 0.45rem 0.9rem; border-radius: calc(var(--radius) - 3px); font-size: 0.875rem; font-weight: 550; color: var(--ink-2); text-align: center; white-space: nowrap; transition: background var(--fast) var(--ease), color var(--fast) var(--ease); }
+  .seg:hover span { color: var(--ink); }
+  .seg input:checked + span { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line-strong); }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .colors { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .color-field { display: grid; gap: 0.4rem; min-width: 0; }
+  .color-row { display: flex; align-items: center; gap: 0.6rem; }
+  .color { width: 3.25rem; height: 2.5rem; padding: 2px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); cursor: pointer; flex: none; }
+  .color:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .color[aria-invalid='true'] { border-color: var(--clay); }
+  .color-out { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--ink-2); }
+  .color-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .color-actions[hidden] { display: none; }
+  [hidden] { display: none !important; }
+
+  .form-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem 1rem; padding-top: 0.25rem; }
+  .privacy { font-size: 0.8125rem; color: var(--muted); flex: 1 1 14rem; }
+
+  /* ---- Preview ---- */
+  .stage { display: grid; place-items: center; }
+  .empty { display: grid; align-content: center; justify-items: center; gap: 0.45rem; width: min(100%, 22rem); aspect-ratio: 1; padding: 1.5rem; text-align: center; border: 1px dashed var(--line-strong); border-radius: var(--radius); background: var(--surface-inset); }
+  .empty[hidden] { display: none; }
+  .empty-title { font-family: var(--font-display); font-size: 1.125rem; font-weight: 600; color: var(--ink); }
+  .empty-text { max-width: 17rem; font-size: 0.9375rem; color: var(--muted); }
+  .empty-list { display: grid; gap: 0.2rem; margin: 0.3rem 0 0; padding: 0; list-style: none; font-size: 0.875rem; font-weight: 550; color: var(--ink-2); }
+  .empty-list[hidden] { display: none; }
+
+  /* The code keeps the colours the user chose (and its own quiet zone); only the frame follows the theme. */
+  .qr { width: min(100%, 22rem); aspect-ratio: 1; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-md); }
+  .qr[hidden] { display: none; }
+  .qr :global(svg) { display: block; width: 100%; height: 100%; }
+
+  .cap { margin-top: 1rem; text-align: center; min-width: 0; }
+  .cap[hidden] { display: none; }
+  .cap-name { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; color: var(--ink); }
+  .cap-sub { margin-top: 0.15rem; font-size: 0.875rem; color: var(--muted); }
+  .notes { margin-top: 0.8rem; }
+
+  .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 1.1rem; }
+  .toast { margin-top: 0.6rem; min-height: 1.3em; text-align: center; font-size: 0.875rem; font-weight: 600; }
+  .toast[data-kind='ok'] { color: var(--success); }
+  .toast[data-kind='bad'] { color: var(--clay-text); }
+  .toast[data-kind='ok']::before { content: '\2713\00a0'; }
+
+  .encoded { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 0.75rem; }
+  .encoded[hidden] { display: none; }
+  .encoded summary { cursor: pointer; font-size: 0.875rem; font-weight: 600; color: var(--accent); min-height: 44px; display: flex; align-items: center; }
+  .encoded-note { margin-top: 0.25rem; font-size: 0.8125rem; color: var(--muted); }
+  .encoded pre { margin: 0.5rem 0 0; padding: 0.6rem 0.8rem; overflow-x: auto; background: var(--surface-inset); border: 1px solid var(--line); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.5; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  /* ---- Touch targets: at least 44px on phones and touch screens (kept in this scoped block so it outranks the rules above) ---- */
+  @media (max-width: 639px), (pointer: coarse) {
+    .qg :global(.btn) { height: 44px; padding-inline: 1.1rem; }
+    .seg span { padding-block: 0.65rem; min-height: 44px; display: grid; place-items: center; }
+    .color { height: 44px; width: 3.5rem; }
+    .input { padding-block: 0.8rem; }
+  }
+  .types { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; }
+  @media (min-width: 640px) and (max-width: 899px), (min-width: 1100px) { .types { grid-template-columns: repeat(6, 1fr); } }
+  .types .seg span { padding-inline: 0.4rem; }
+  @media (max-width: 479px) {
+    .seg span { padding-inline: 0.5rem; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .actions :global(.btn-primary) { grid-column: 1 / -1; }
+    .colors { grid-template-columns: 1fr; }
+  }
+</style>

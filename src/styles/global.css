@@ -2,76 +2,126 @@
    Design tokens + base styles. Component-specific styles live in each component.
    ========================================================================== */
 
-/* ---- Light theme (default) ---- */
+/* ---- Light theme (default): warm paper, forest green + restrained terracotta ---- */
 :root,
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --bg: #fafaf7;
-  --surface: #ffffff;
-  --surface-sunken: #f3f2ec;
-  --ink: #14161a;
-  --ink-2: #3d434b;
-  --muted: #646a72;
-  --placeholder: #8a9099;
-  --line: #e7e6df;
-  --line-strong: #d6d4cb;
-  --accent: #2b4bd1;
-  --accent-ink: #ffffff;
-  --accent-hover: #2339a8;
-  --accent-tint: #eef1fd;
-  --success: #17794a;
-  --success-tint: #e8f5ee;
+  /* Surfaces */
+  --bg: #f3f0e8;
+  --bg-alt: #e7e2d6;
+  --surface: #faf8f2;
+  --surface-sunken: #ece8dd;
+  --surface-inset: #f0ece2;
+  --elevated: #fffdf8;
+
+  /* Text */
+  --ink: #292c25;
+  --ink-2: #4a4d43;
+  --muted: #66675c;
+  --placeholder: #8a8a7e;
+
+  /* Borders */
+  --line: #d9d4c8;
+  --line-strong: #c6c0b0;
+
+  /* Primary accent: forest green. Secondary: terracotta (used sparingly). */
+  --accent: #5e6c53;
+  --accent-ink: #faf8f2;
+  --accent-hover: #4b5842;
+  --accent-tint: #e2e5d6;
+  --clay: #c66b45;
+  --clay-text: #a5502c;
+  --clay-tint: #efdccf;
+  --success: #4f6b45;
+  --success-tint: #e2e7d4;
 
   /* Primary button + brand mark */
-  --btn-bg: #14161a;
-  --btn-bg-hover: #000000;
-  --btn-ink: #ffffff;
+  --btn-bg: #5e6c53;
+  --btn-bg-hover: #4b5842;
+  --btn-ink: #faf8f2;
+  --btn-shadow: 0 1px 0 rgba(41, 44, 37, 0.18);
 
   /* Code sample colours */
-  --code-str: #8a4b12;
+  --code-key: #5e6c53;
+  --code-str: #a5502c;
+  --code-bool: #7a6528;
 
-  --shadow-sm: 0 1px 2px rgba(20, 22, 26, 0.04);
-  --shadow-md: 0 1px 2px rgba(20, 22, 26, 0.04), 0 8px 24px -8px rgba(20, 22, 26, 0.12);
-  --shadow-lg: 0 1px 2px rgba(20, 22, 26, 0.04), 0 24px 48px -24px rgba(20, 22, 26, 0.2);
+  /* Tool icon tones: muted, earthy, one family */
+  --tone-on: #faf8f2;
+  --sage: #5e6c53;
+  --clay-tone: #b25a36;
+  --ochre: #8a6b22;
+  --slate: #4f6b68;
+  --umber: #85584a;
+
+  --shadow-sm: 0 1px 2px rgba(60, 52, 30, 0.06);
+  --shadow-md: 0 1px 2px rgba(60, 52, 30, 0.05), 0 10px 24px -10px rgba(60, 52, 30, 0.22);
+  --shadow-lg: 0 1px 2px rgba(60, 52, 30, 0.05), 0 28px 50px -26px rgba(60, 52, 30, 0.32);
 }
 
-/* ---- Dark theme: charcoal neutrals, lifted surfaces, softened accent ---- */
+/* ---- Dark theme: rich charcoal with green undertones and warm highlights ---- */
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --bg: #111316;
-  --surface: #1a1d21;
-  --surface-sunken: #212529;
-  --ink: #eceef0;
-  --ink-2: #c4c9ce;
-  --muted: #9198a1;
-  --placeholder: #6f7680;
-  --line: #262a30;
-  --line-strong: #373d45;
-  --accent: #8fa3ff;
-  --accent-ink: #0f1424;
-  --accent-hover: #b0bdff;
-  --accent-tint: rgba(143, 163, 255, 0.13);
-  --success: #5fd19a;
-  --success-tint: rgba(95, 209, 154, 0.13);
+  --bg: #181b18;
+  --bg-alt: #202720;
+  --surface: #232923;
+  --surface-sunken: #2b332b;
+  --surface-inset: #1d221d;
+  --elevated: #303830;
 
-  --btn-bg: #eceef0;
-  --btn-bg-hover: #ffffff;
-  --btn-ink: #111316;
+  --ink: #e9e5d9;
+  --ink-2: #c9c6b9;
+  --muted: #a5a69a;
+  --placeholder: #7e8076;
 
-  --code-str: #e3ae74;
+  --line: #394139;
+  --line-strong: #4b564b;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 0 0 1px rgba(255, 255, 255, 0.03), 0 10px 28px -8px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 0 0 1px rgba(255, 255, 255, 0.03), 0 28px 56px -24px rgba(0, 0, 0, 0.7);
+  --accent: #a5b294;
+  --accent-ink: #181b18;
+  --accent-hover: #bcc7ad;
+  --accent-tint: rgba(165, 178, 148, 0.15);
+  --clay: #e18a65;
+  --clay-text: #eba184;
+  --clay-tint: rgba(225, 138, 101, 0.15);
+  --success: #a5b294;
+  --success-tint: rgba(165, 178, 148, 0.15);
+
+  --btn-bg: #a5b294;
+  --btn-bg-hover: #b8c4a8;
+  --btn-ink: #181b18;
+  --btn-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+
+  --code-key: #a5b294;
+  --code-str: #e18a65;
+  --code-bool: #d4b56a;
+
+  --tone-on: #181b18;
+  --sage: #a5b294;
+  --clay-tone: #e18a65;
+  --ochre: #d4b56a;
+  --slate: #8fb0ac;
+  --umber: #d09a86;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 0 0 1px rgba(233, 229, 217, 0.03), 0 12px 28px -10px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 0 0 1px rgba(233, 229, 217, 0.03), 0 30px 56px -26px rgba(0, 0, 0, 0.7);
 }
+
+/* Per-tool icon tone: set data-tone on any element; children read --tone */
+[data-tone='sage']  { --tone: var(--sage); }
+[data-tone='slate'] { --tone: var(--slate); }
+[data-tone='clay']  { --tone: var(--clay-tone); }
+[data-tone='ochre'] { --tone: var(--ochre); }
+[data-tone='umber'] { --tone: var(--umber); }
 
 :root {
 
   /* Type */
   --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Text', 'Segoe UI', Inter, Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-display: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Segoe UI', Inter, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', 'Source Serif Pro', Georgia, serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
 
   /* Shape */
@@ -91,13 +141,17 @@
   --med: 240ms;
 }
 
-/* Suppress transitions for the single frame when the theme flips, so the swap is instant. */
-.theme-switching,
-.theme-switching *,
-.theme-switching *::before,
-.theme-switching *::after {
-  transition: none !important;
+/* ---- Theme change: circular reveal (View Transitions API) ----
+   The old page snapshot stays still underneath; the new theme is revealed through an
+   expanding clip-path circle, animated from script (see ThemeToggle.astro). Browsers
+   without the API simply switch instantly. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
 
 *,
 *::before,
@@ -126,9 +180,9 @@ h1, h2, h3, h4 {
   font-family: var(--font-display);
   color: var(--ink);
   margin: 0;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  line-height: 1.12;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
   text-wrap: balance;
 }
 
@@ -150,7 +204,7 @@ button, input { font: inherit; color: inherit; }
   border-radius: 4px;
 }
 
-::selection { background: var(--accent-tint); color: var(--accent-hover); }
+::selection { background: var(--accent-tint); color: var(--ink); }
 
 /* ---------- Shared layout helpers ---------- */
 .container {
@@ -163,12 +217,12 @@ button, input { font: inherit; color: inherit; }
 .section { padding-block: var(--section-y); }
 
 .eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 650;
 }
 
 .section-head {
@@ -206,6 +260,31 @@ button, input { font: inherit; color: inherit; }
 }
 .skip-link:focus { top: 1rem; }
 
+/* ---------- Long-form text (About, legal, help answers) ---------- */
+.prose { max-width: 42rem; color: var(--ink-2); font-size: 1.0625rem; line-height: 1.7; }
+.prose > * + * { margin-top: 1.1rem; }
+.prose h2 { font-size: 1.5rem; margin-top: 2.5rem; color: var(--ink); }
+.prose h2 + * { margin-top: 0.75rem; }
+.prose ul { list-style: disc; padding-left: 1.25rem; display: grid; gap: 0.4rem; }
+.prose a, .link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color var(--fast) var(--ease);
+}
+.prose a:hover, .link:hover { text-decoration-color: currentColor; }
+.notice {
+  padding: 0.9rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--clay) 40%, var(--line));
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  background: var(--clay-tint);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-flex;
@@ -226,17 +305,21 @@ button, input { font: inherit; color: inherit; }
 .btn svg { transition: transform var(--fast) var(--ease); }
 .btn:hover svg.arrow { transform: translateX(3px); }
 
-.btn-primary { background: var(--btn-bg); color: var(--btn-ink); }
+.btn-primary { background: var(--btn-bg); color: var(--btn-ink); box-shadow: var(--btn-shadow); }
 .btn-primary:hover { background: var(--btn-bg-hover); }
 .btn-primary:active { transform: translateY(1px); }
 
 .btn-secondary { background: var(--surface); border-color: var(--line-strong); color: var(--ink); }
-.btn-secondary:hover { border-color: var(--ink-2); }
+.btn-secondary:hover { border-color: var(--accent); }
 .btn-icon {
   width: 40px; height: 40px; padding: 0;
   background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink);
 }
-.btn-icon:hover { border-color: var(--ink-2); }
+.btn-icon:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-tint); }
+
+.btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+.btn-primary:disabled:hover { background: var(--btn-bg); }
+.btn-secondary:disabled:hover { border-color: var(--line-strong); }
 
 .btn-sm { height: 36px; padding-inline: 0.9rem; font-size: 0.875rem; }
 
@@ -257,3 +340,4 @@ button, input { font: inherit; color: inherit; }
   }
   .js [data-reveal] { opacity: 1; transform: none; }
 }
+

@@ -1,0 +1,62 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import { site } from '../config/site.js';
+import { liveTools, toolHref, countWord } from '../data/tools.js';
+---
+
+<PageLayout
+  title={`About ${site.name}: free tools that run in your browser`}
+  description={`About ${site.name}: free, focused online tools for images, text, JSON and QR codes that run in your browser, without sign-ups.`}
+>
+  <PageHero
+    eyebrow="About"
+    title={`About ${site.name}`}
+    intro="A growing collection of simple online utilities for the small jobs that come up every day."
+    crumbs={[{ label: 'About' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="prose">
+        <h2 style="margin-top:0">What {site.name} is</h2>
+        <p>
+          {site.name} is a collection of online tools for everyday tasks. Each tool is meant to do one job clearly, load quickly and stay out of your way.
+          There are {countWord(liveTools.length).toLowerCase()} tools today:
+        </p>
+        <ul>
+          {liveTools.map((t) => <li><a href={toolHref(t)}>{t.name}</a>: {t.description}</li>)}
+        </ul>
+
+        <h2>Why it exists</h2>
+        <p>
+          Many everyday tasks are small, but the tools for them can be cluttered, confusing or buried behind sign-up screens.
+          {site.name} exists to offer a calmer alternative: a straightforward tool for each task, without unnecessary steps.
+        </p>
+
+        <h2>How your data is handled</h2>
+        <p>
+          The tools run in your browser. Images, text, JSON and QR code details are processed on your own device and are not uploaded to a server.
+          The <a href="/privacy">Privacy Policy</a> explains exactly what the site does and does not store.
+        </p>
+
+        <h2>What we focus on</h2>
+        <ul>
+          <li><strong>Simple.</strong> One tool, one purpose, with an interface that explains itself.</li>
+          <li><strong>Useful.</strong> Tools for tasks people genuinely run into regularly.</li>
+          <li><strong>Accessible.</strong> Clear text, good contrast, keyboard-friendly controls and layouts that work on any screen size.</li>
+        </ul>
+
+        <h2>What comes next</h2>
+        <p>
+          More tools are planned, and the platform is built so that new ones can be added without changing how the site works.
+          If there is a tool you would like to see, <a href="/contact">tell us</a>.
+        </p>
+
+        <p>
+          Questions? Visit the <a href="/help">Help / FAQ</a> page, or <a href="/tools">browse all the tools</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</PageLayout>

@@ -9,6 +9,10 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "astro": "^5.0.0"
+    "astro": "^5.0.0",
+    "lean-qr": "^2.7.4"
+  },
+  "devDependencies": {
+    "jsqr": "^1.4.0"
   }
 }

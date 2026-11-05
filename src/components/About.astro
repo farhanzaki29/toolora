@@ -1,5 +1,6 @@
 ---
 import { site } from '../config/site.js';
+import { liveTools, countWord } from '../data/tools.js';
 ---
 
 <section class="section about" id="about" aria-labelledby="about-title">
@@ -13,14 +14,17 @@ import { site } from '../config/site.js';
         {site.name} is a growing collection of simple online utilities for the jobs that come up every day. Each tool does one thing, loads quickly and stays out of the way.
       </p>
       <p>
-        We’re starting with five tools and building a foundation that makes it easy to add more over time.
+        We’re starting with {countWord(liveTools.length).toLowerCase()} tools and building a foundation that makes it easy to add more over time.
       </p>
+      <p><a class="more" href="/about">Read more about {site.name} <span aria-hidden="true">→</span></a></p>
     </div>
   </div>
 </section>
 
 <style>
   .about { border-top: 1px solid var(--line); }
+  .more { color: var(--accent); font-weight: 600; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); text-underline-offset: 3px; }
+  .more:hover { text-decoration-color: currentColor; }
   .wrap { display: grid; gap: 1.75rem; }
   h2 { margin-top: 0.75rem; font-size: clamp(1.5rem, 3vw, 2rem); max-width: 18ch; }
   .body { display: grid; gap: 1rem; color: var(--ink-2); font-size: 1.0625rem; max-width: 36rem; }

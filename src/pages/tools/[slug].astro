@@ -1,0 +1,37 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import ToolPage from '../../components/ToolPage.astro';
+import WordCounter from '../../components/tools/WordCounter.astro';
+import JsonFormatter from '../../components/tools/JsonFormatter.astro';
+import WifiQrGenerator from '../../components/tools/WifiQrGenerator.astro';
+import ImageCompressor from '../../components/tools/ImageCompressor.astro';
+import ImageResizer from '../../components/tools/ImageResizer.astro';
+import QrCodeGenerator from '../../components/tools/QrCodeGenerator.astro';
+import { liveTools } from '../../data/tools.js';
+import { toolLd, faqLd } from '../../lib/seo.js';
+
+// One page per live tool in src/data/tools.js. Adding a tool there creates its page automatically.
+export function getStaticPaths() {
+  return liveTools.map((tool) => ({ params: { slug: tool.slug }, props: { tool } }));
+}
+
+// Implemented tool interfaces, keyed by slug. Tools not listed here show the placeholder workspace.
+const workspaces = {
+  'word-counter': WordCounter,
+  'json-formatter': JsonFormatter,
+  'wifi-qr-generator': WifiQrGenerator,
+  'image-compressor': ImageCompressor,
+  'image-resizer': ImageResizer,
+  'qr-code-generator': QrCodeGenerator,
+};
+
+const { tool } = Astro.props;
+---
+
+<PageLayout
+  title={tool.metaTitle ?? tool.name}
+  description={tool.metaDescription ?? tool.description}
+  jsonLd={workspaces[tool.slug] ? [toolLd(Astro.site, tool), faqLd(tool.faq)] : []}
+>
+  <ToolPage tool={tool} Workspace={workspaces[tool.slug]} />
+</PageLayout>

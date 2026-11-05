@@ -1,0 +1,156 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import ToolCard from '../../components/ToolCard.astro';
+import Icon from '../../components/Icon.astro';
+import { liveTools } from '../../data/tools.js';
+---
+
+<PageLayout
+  title="All tools: images, text, JSON and QR codes"
+  description="Browse every Toolora tool: image compressor and resizer, word counter, JSON formatter, WiFi QR and general QR code generators. Free and browser-based."
+>
+  <PageHero
+    eyebrow="Tools"
+    title="All tools"
+    intro="Pick a tool, or search by what you need to do. New tools are added to this directory as they are built."
+    crumbs={[{ label: 'Tools' }]}
+  >
+    <form class="search" role="search" data-dir-form>
+      <label for="dir-search" class="sr-only">Search tools</label>
+      <span class="search-icon"><Icon name="search" size={20} /></span>
+      <input
+        id="dir-search"
+        type="search"
+        placeholder="Search tools, e.g. “resize image”"
+        autocomplete="off"
+        spellcheck="false"
+        aria-controls="tool-grid"
+        data-dir-search
+      />
+      <button class="btn btn-secondary btn-sm clear" type="button" data-dir-clear hidden>Clear</button>
+    </form>
+    <p class="count" role="status" aria-live="polite" data-dir-count>{liveTools.length} tools</p>
+  </PageHero>
+
+  <section class="section list" aria-label="Tool directory">
+    <div class="container">
+      <h2 class="sr-only">All tools</h2>
+      <ul class="grid" id="tool-grid">
+        {liveTools.map((tool, i) => <ToolCard tool={tool} index={i} />)}
+      </ul>
+
+      <div class="empty" data-dir-empty hidden>
+        <h2>No tools match “<span data-dir-term></span>”</h2>
+        <p>Try a simpler word such as “image”, “text”, “json” or “qr”, or clear the search to see every tool.</p>
+        <button class="btn btn-primary btn-sm" type="button" data-dir-reset>Show all tools</button>
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-dir-search]')!;
+  const form = document.querySelector<HTMLFormElement>('[data-dir-form]')!;
+  const items = Array.from(document.querySelectorAll<HTMLElement>('[data-tool-item]'));
+  const count = document.querySelector<HTMLElement>('[data-dir-count]')!;
+  const empty = document.querySelector<HTMLElement>('[data-dir-empty]')!;
+  const term = document.querySelector<HTMLElement>('[data-dir-term]')!;
+  const clear = document.querySelector<HTMLButtonElement>('[data-dir-clear]')!;
+
+  const filter = () => {
+    const raw = input.value.trim();
+    const terms = raw.toLowerCase().split(/\s+/).filter(Boolean);
+    let visible = 0;
+    for (const el of items) {
+      const match = terms.every((t) => (el.dataset.search ?? '').includes(t));
+      el.hidden = !match;
+      if (match) {
+        visible++;
+        el.classList.add('is-visible'); // never leave a re-shown card stuck at opacity 0
+      }
+    }
+    empty.hidden = visible > 0;
+    term.textContent = raw;
+    clear.hidden = raw === '';
+    count.textContent = raw
+      ? `${visible} of ${items.length} tools match`
+      : `${items.length} tools`;
+  };
+
+  const reset = () => {
+    input.value = '';
+    filter();
+    input.focus();
+  };
+
+  input.addEventListener('input', filter);
+  form.addEventListener('submit', (e) => e.preventDefault());
+  clear.addEventListener('click', reset);
+  document.querySelector('[data-dir-reset]')!.addEventListener('click', reset);
+
+  // Support /tools?q=json links
+  const q = new URLSearchParams(location.search).get('q');
+  if (q) input.value = q;
+  filter();
+
+  // Press "/" to focus search
+  document.addEventListener('keydown', (e) => {
+    const t = e.target as HTMLElement;
+    const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+    if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault();
+      input.focus();
+    }
+  });
+</script>
+
+<style>
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    max-width: 36rem;
+    padding: 6px 8px 6px 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+  }
+  .search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-tint); }
+  .search-icon { color: var(--accent); display: grid; }
+  .search input {
+    flex: 1;
+    min-width: 0;
+    height: 46px;
+    border: 0;
+    background: transparent;
+    font-size: 1rem;
+  }
+  .search input:focus, .search input:focus-visible { outline: none; }
+  .search input::placeholder { color: var(--placeholder); }
+  .search input::-webkit-search-cancel-button { display: none; }
+  .clear[hidden] { display: none; }
+  .count { margin-top: 0.85rem; font-size: 0.875rem; color: var(--muted); }
+
+  .list { padding-top: clamp(2rem, 4vw, 3rem); }
+  .grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 960px) { .grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; } }
+
+  .empty {
+    max-width: 34rem;
+    margin-inline: auto;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+  .empty[hidden] { display: none; }
+  .empty h2 { font-size: 1.375rem; }
+  .empty p { margin-top: 0.6rem; color: var(--muted); }
+  .empty .btn { margin-top: 1.25rem; }
+</style>

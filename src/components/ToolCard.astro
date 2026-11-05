@@ -7,7 +7,7 @@ const searchText = `${tool.name} ${tool.description} ${tool.category} ${tool.key
 ---
 
 <li class="item" data-tool-item data-search={searchText} data-reveal style={`--reveal-delay:${index * 60}ms`}>
-  <a class="card" href={toolHref(tool)}>
+  <a class="card" href={toolHref(tool)} data-tone={tool.tone}>
     <div class="top">
       <span class="icon"><Icon name={tool.icon} size={22} /></span>
       <span class="badge">Free</span>
@@ -33,11 +33,12 @@ const searchText = `${tool.name} ${tool.description} ${tool.category} ${tool.key
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     transition: transform var(--med) var(--ease), border-color var(--med) var(--ease),
-      box-shadow var(--med) var(--ease);
+      box-shadow var(--med) var(--ease), background var(--med) var(--ease);
   }
   .card:hover {
     transform: translateY(-3px);
     border-color: var(--line-strong);
+    background: var(--elevated);
     box-shadow: var(--shadow-md);
   }
   .card:focus-visible { outline-offset: 2px; border-radius: var(--radius-lg); }
@@ -55,17 +56,18 @@ const searchText = `${tool.name} ${tool.description} ${tool.category} ${tool.key
     height: 44px;
     border-radius: var(--radius);
     background: var(--surface-sunken);
-    color: var(--ink);
+    color: var(--tone);
+    border: 1px solid var(--line);
     transition: background var(--med) var(--ease), color var(--med) var(--ease);
   }
-  .card:hover .icon { background: var(--accent); color: var(--accent-ink); }
+  .card:hover .icon { background: var(--tone); color: var(--tone-on); border-color: var(--tone); }
 
   .badge {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 0.6875rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    font-weight: 500;
+    font-weight: 650;
     color: var(--success);
     background: var(--success-tint);
     padding: 0.25rem 0.55rem;
@@ -93,6 +95,6 @@ const searchText = `${tool.name} ${tool.description} ${tool.category} ${tool.key
   .open :global(.arrow) {
     transition: transform var(--med) var(--ease);
   }
-  .card:hover .open { color: var(--accent); }
+  .card:hover .open { color: var(--clay-text); }
   .card:hover .open :global(.arrow) { transform: translateX(4px); }
 </style>

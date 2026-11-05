@@ -1,0 +1,37 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import { site } from '../config/site.js';
+---
+
+<!-- Kept out of search results (noindex) until real terms have been written and reviewed. -->
+<PageLayout title="Terms of Use" description={`Draft terms of use for ${site.name}. This placeholder will be replaced with reviewed terms before launch and is not indexed by search engines.`} noindex>
+  <PageHero
+    eyebrow="Legal"
+    title="Terms of Use"
+    intro="Draft placeholder. This is not a final or legally reviewed document."
+    crumbs={[{ label: 'Terms of Use' }]}
+  />
+  <section class="section">
+    <div class="container">
+      <div class="prose">
+        <p class="notice">
+          <strong>Draft content.</strong> This page is a placeholder and has not been reviewed by a legal professional.
+          It does not create any rights, warranties or obligations.
+        </p>
+        <h2>Overview</h2>
+        <p>
+          Terms of Use for {site.name} will be published here before launch. They are expected to explain the conditions
+          for using the website and its tools.
+        </p>
+        <h2>In the meantime</h2>
+        <p>
+          The tools are provided as they are and may contain mistakes. Check important results, and test QR codes before printing them.
+          See the <a href="/privacy">Privacy Policy</a> for how your information is handled.
+        </p>
+        <h2>Questions</h2>
+        <p>See the <a href="/help">Help / FAQ</a> page or <a href="/contact">contact us</a>.</p>
+      </div>
+    </div>
+  </section>
+</PageLayout>

@@ -1,9 +1,15 @@
 ---
 import '../styles/global.css';
 import { site } from '../config/site.js';
+import { absoluteUrl, jsonLdString } from '../lib/seo.js';
 
-const { title, description = site.description } = Astro.props;
-const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — ${site.tagline}`;
+// title: page name (the brand is appended unless the title already contains it).
+// noindex: keep this page out of search results (drafts, 404).
+// jsonLd: array of JSON-LD objects to embed (nulls are ignored).
+const { title, description = site.description, noindex = false, jsonLd = [] } = Astro.props;
+const pageTitle = !title ? `${site.name} — ${site.tagline}` : title.includes(site.name) ? title : `${title} · ${site.name}`;
+const canonical = noindex ? null : absoluteUrl(Astro.site, Astro.url.pathname);
+const blocks = jsonLd.filter(Boolean);
 ---
 
 <!doctype html>
@@ -13,11 +19,20 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — ${site.
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#fafaf7" />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta name="theme-color" content="#f3f0e8" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:locale" content="en" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {blocks.map((b) => <script type="application/ld+json" set:html={jsonLdString(b)} />)}
     <!-- Runs before first paint: applies saved theme, else the OS preference, so there is no flash. -->
     <script is:inline>
       (function () {
@@ -30,7 +45,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — ${site.
         }
         root.dataset.theme = theme;
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', theme === 'dark' ? '#111316' : '#fafaf7');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#181b18' : '#f3f0e8');
       })();
     </script>
   </head>

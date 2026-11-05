@@ -50,7 +50,7 @@ import { liveTools } from '../data/tools.js';
         <div class="panel-body">
           <ul class="rail">
             {liveTools.map((t, i) => (
-              <li class:list={[{ active: i === 3 }]}>
+              <li class:list={[{ active: i === 3 }]} data-tone={t.tone}>
                 <Icon name={t.icon} size={16} />
                 <span>{t.name}</span>
               </li>
@@ -132,7 +132,6 @@ import { liveTools } from '../data/tools.js';
     background:
       linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 56px,
       var(--bg);
-    background-blend-mode: normal;
     position: relative;
   }
   /* Fade the faint ruled lines out so they only whisper at the top */
@@ -157,11 +156,21 @@ import { liveTools } from '../data/tools.js';
   h1 {
     margin-top: 1rem;
     font-size: clamp(2.5rem, 6.4vw, 4.25rem);
-    letter-spacing: -0.035em;
+    letter-spacing: -0.028em;
     line-height: 1.04;
-    font-weight: 700;
+    font-weight: 600;
   }
-  .soft { color: var(--muted); font-weight: 600; }
+  .soft { display: block; font-style: italic; font-weight: 500; color: var(--clay-text); }
+  .hero .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .hero .eyebrow::before {
+    content: '';
+    width: 22px; height: 1px;
+    background: var(--clay);
+  }
 
   .lede {
     margin-top: 1.5rem;
@@ -183,14 +192,14 @@ import { liveTools } from '../data/tools.js';
     background: var(--surface);
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-md);
     transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
   }
   .search:focus-within {
     border-color: var(--accent);
     box-shadow: 0 0 0 4px var(--accent-tint);
   }
-  .search-icon { color: var(--muted); display: grid; }
+  .search-icon { color: var(--accent); display: grid; }
   .search input {
     flex: 1;
     min-width: 0;
@@ -230,7 +239,7 @@ import { liveTools } from '../data/tools.js';
   }
   .chip {
     border: 1px solid var(--line-strong);
-    background: transparent;
+    background: var(--surface);
     border-radius: 999px;
     padding: 0.25rem 0.8rem;
     font-size: 0.8125rem;
@@ -279,7 +288,9 @@ import { liveTools } from '../data/tools.js';
     color: var(--muted);
     white-space: nowrap;
   }
-  .rail li.active { background: var(--accent-tint); color: var(--accent); font-weight: 550; }
+  .rail li :global(svg) { color: var(--tone); }
+  .rail li.active { background: var(--surface-sunken); color: var(--ink); font-weight: 600; box-shadow: inset 2px 0 0 var(--clay); }
+  .rail { background: var(--surface-inset); }
 
   .preview { padding: 1rem 1.1rem; min-width: 0; }
   .preview-head {
@@ -291,9 +302,11 @@ import { liveTools } from '../data/tools.js';
     margin-bottom: 0.9rem;
   }
   .ok {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 0.6875rem;
-    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 650;
     color: var(--success);
     background: var(--success-tint);
     padding: 0.15rem 0.5rem;
@@ -302,7 +315,8 @@ import { liveTools } from '../data/tools.js';
   pre {
     margin: 0;
     padding: 0.9rem 1rem;
-    background: var(--surface-sunken);
+    background: var(--surface-inset);
+    border: 1px solid var(--line);
     border-radius: var(--radius);
     font-family: var(--font-mono);
     font-size: 0.78rem;
@@ -312,9 +326,9 @@ import { liveTools } from '../data/tools.js';
     white-space: pre-wrap;
   }
   .k { color: var(--muted); }
-  .s { color: var(--accent); }
+  .s { color: var(--code-key); }
   .v { color: var(--code-str); }
-  .b { color: var(--success); }
+  .b { color: var(--code-bool); }
 
   @media (max-width: 520px) {
     .panel-body { grid-template-columns: 1fr; }

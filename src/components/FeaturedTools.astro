@@ -1,19 +1,21 @@
 ---
 import ToolCard from './ToolCard.astro';
-import { liveTools } from '../data/tools.js';
+import { liveTools, countWord } from '../data/tools.js';
 ---
 
 <section class="section tools" id="tools" aria-labelledby="tools-title">
   <div class="container">
     <div class="section-head" data-reveal>
       <p class="eyebrow">Featured tools</p>
-      <h2 id="tools-title">Five tools, ready when you are</h2>
+      <h2 id="tools-title">{countWord(liveTools.length)} tools, ready when you are</h2>
       <p>Open a tool and get to work. No account, no installs, no waiting around.</p>
     </div>
 
     <ul class="grid" data-tool-grid>
       {liveTools.map((tool, i) => <ToolCard tool={tool} index={i} />)}
     </ul>
+
+    <p class="all"><a class="btn btn-secondary" href="/tools">View all tools</a></p>
 
     <p class="empty" data-tool-empty hidden role="status">
       No tools match your search yet. Try “image”, “json” or “qr”.
@@ -30,6 +32,7 @@ import { liveTools } from '../data/tools.js';
   @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 960px) { .grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; } }
 
+  .all { margin-top: 2rem; }
   .empty {
     margin-top: 1.5rem;
     padding: 2rem;

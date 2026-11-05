@@ -1,0 +1,48 @@
+---
+/** Page heading block used at the top of every inner page. Default slot = extra content (e.g. a search field). */
+import Breadcrumbs from './Breadcrumbs.astro';
+
+const { eyebrow, title, intro, crumbs = [] } = Astro.props;
+---
+
+<header class="page-hero">
+  <div class="container">
+    {crumbs.length > 0 && <Breadcrumbs items={crumbs} />}
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <h1>{title}</h1>
+    {intro && <p class="intro">{intro}</p>}
+    <slot />
+  </div>
+</header>
+
+<style>
+  .page-hero {
+    padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(2rem, 4vw, 3rem);
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 56px, var(--bg);
+    position: relative;
+  }
+  .page-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 55%, transparent), var(--bg) 85%);
+    pointer-events: none;
+  }
+  .container { position: relative; }
+  .eyebrow { margin-top: 1.25rem; }
+  h1 {
+    margin-top: 0.75rem;
+    font-size: clamp(2.1rem, 5vw, 3.25rem);
+    letter-spacing: -0.025em;
+    line-height: 1.06;
+    font-weight: 600;
+  }
+  :global(.crumbs) + h1 { margin-top: 1.25rem; }
+  .intro {
+    margin-top: 1.1rem;
+    max-width: 38rem;
+    font-size: clamp(1.0625rem, 1.6vw, 1.1875rem);
+    color: var(--ink-2);
+  }
+</style>

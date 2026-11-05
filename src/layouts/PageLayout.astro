@@ -1,0 +1,20 @@
+---
+/**
+ * Shared shell for every inner page: header, <main id="main">, footer.
+ * Usage: <PageLayout title="About" description="..."> ...page content... </PageLayout>
+ * Optional: noindex, jsonLd (see Layout.astro).
+ */
+import Layout from './Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const { title, description, noindex = false, jsonLd = [] } = Astro.props;
+---
+
+<Layout title={title} description={description} noindex={noindex} jsonLd={jsonLd}>
+  <Header />
+  <main id="main">
+    <slot />
+  </main>
+  <Footer />
+</Layout>

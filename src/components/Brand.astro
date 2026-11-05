@@ -2,7 +2,7 @@
 import { site } from '../config/site.js';
 ---
 
-<a class="brand" href="/" aria-label={`${site.name} home`}>
+<a class="brand" href="/">
   <span class="mark" aria-hidden="true">{site.name.charAt(0)}</span>
   <span class="name">{site.name}</span>
 </a>
@@ -23,11 +23,13 @@ import { site } from '../config/site.js';
     width: 26px;
     height: 26px;
     border-radius: 6px;
-    background: var(--btn-bg);
-    color: var(--btn-ink);
-    font-size: 0.875rem;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
     font-weight: 700;
+    font-style: italic;
     transition: background var(--fast) var(--ease);
   }
-  .brand:hover .mark { background: var(--accent); color: var(--accent-ink); }
+  .brand:hover .mark { background: var(--clay); }
 </style>

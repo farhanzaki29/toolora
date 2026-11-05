@@ -1,0 +1,17 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHero from '../components/PageHero.astro';
+---
+
+<PageLayout title="Page not found" description="The page you were looking for could not be found." noindex>
+  <PageHero eyebrow="404" title="Page not found" intro="That page doesn’t exist or may have moved.">
+    <p class="actions">
+      <a class="btn btn-primary" href="/">Go to Home</a>
+      <a class="btn btn-secondary" href="/tools">Browse tools</a>
+    </p>
+  </PageHero>
+</PageLayout>
+
+<style>
+  .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+</style>

@@ -1,0 +1,109 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../config/site.js';
+import { faqLd } from '../lib/seo.js';
+
+const faqs = [
+  {
+    q: 'Are the tools free?',
+    a: `Yes. Every tool on ${site.name} is free to use. If that ever changes for a particular tool, it will be stated clearly on that tool's page.`,
+    extra: { label: 'Browse the tools', href: '/tools' },
+  },
+  {
+    q: 'Do I need to create an account?',
+    a: `No. There are no accounts or sign-ups on ${site.name}. Open a tool and use it.`,
+  },
+  {
+    q: 'How do I use the tools?',
+    a: 'Open the Tools page, choose the tool you need, and follow the steps on its page. Each tool page has a short "How to use" section, notes on limits, and answers to common questions about that tool.',
+    extra: { label: 'Browse the tools', href: '/tools' },
+  },
+  {
+    q: 'Which image formats are supported?',
+    a: 'The Image Compressor and Image Resizer accept JPG, PNG and WebP images, up to 100 MB and 100 megapixels each, and can save as JPEG, PNG or WebP where your browser supports it. Animated images are not supported.',
+    extra: { label: 'Open the Image Compressor', href: '/tools/image-compressor' },
+  },
+  {
+    q: 'Are my files and text uploaded?',
+    a: 'No. The tools do their work in your browser, so images, text, JSON and QR code details stay on your device and are not sent to a server. The only thing the site saves is your light or dark theme choice.',
+    extra: { label: 'Read the Privacy Policy', href: '/privacy' },
+  },
+  {
+    q: 'Can I scan the QR codes with my phone?',
+    a: 'Yes. Recent iPhone and Android cameras read QR codes directly. Use dark code colours on a light background, keep the white border, and test the code with your phone before printing it.',
+    extra: { label: 'Open the QR Code Generator', href: '/tools/qr-code-generator' },
+  },
+  {
+    q: 'I have a suggestion or found a problem. What should I do?',
+    a: 'Please get in touch. Note that the contact form is currently a placeholder and does not send messages yet.',
+    extra: { label: 'Go to Contact', href: '/contact' },
+  },
+];
+---
+
+<PageLayout
+  title="Help and frequently asked questions"
+  description={`Answers to common questions about ${site.name}: whether the tools are free, which file formats they support and how your data is handled.`}
+  jsonLd={[faqLd(faqs)]}
+>
+  <PageHero
+    eyebrow="Support"
+    title="Help / FAQ"
+    intro="Quick answers to common questions. Select a question to expand it."
+    crumbs={[{ label: 'Help / FAQ' }]}
+  />
+
+  <section class="section">
+    <div class="container narrow">
+      <div class="faq">
+        {faqs.map((f, i) => (
+          <details open={i === 0}>
+            <summary>
+              <span>{f.q}</span>
+              <Icon name="plus" size={20} class="chev" />
+            </summary>
+            <div class="answer">
+              <p>{f.a}</p>
+              {f.extra && (
+                <p><a class="link" href={f.extra.href}>{f.extra.label} <span aria-hidden="true">→</span></a></p>
+              )}
+            </div>
+          </details>
+        ))}
+      </div>
+
+      <p class="more">
+        Can’t find what you need? <a class="link" href="/contact">Contact us</a> or <a class="link" href="/tools">browse the tools</a>.
+      </p>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .narrow { max-width: 50rem; margin-inline: 0; }
+  @media (min-width: 1200px) { .narrow { margin-inline: auto; max-width: var(--container); } .faq, .more { max-width: 46rem; } }
+  .faq { border-top: 1px solid var(--line-strong); }
+  details { border-bottom: 1px solid var(--line-strong); }
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 0.25rem;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-display);
+    font-size: 1.1875rem;
+    font-weight: 600;
+    color: var(--ink);
+    transition: color var(--fast) var(--ease);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--accent); }
+  summary :global(.chev) { flex: none; color: var(--clay-text); transition: transform var(--med) var(--ease); }
+  details[open] summary :global(.chev) { transform: rotate(45deg); }
+  .answer { padding: 0 0.25rem 1.4rem; max-width: 40rem; color: var(--ink-2); display: grid; gap: 0.75rem; }
+  .more { margin-top: 2rem; color: var(--muted); }
+</style>
